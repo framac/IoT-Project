@@ -10,93 +10,93 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.user.iot.MainActivity">
 
-    <TextView android:text="Utente ospite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textview"
-        android:textSize="15dp"
-        android:textColor="@color/colorPrimaryDark"
-        android:layout_alignParentTop="true" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView android:text="Connessione bluetooth"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textview2"
-        android:textSize="25dp"
-        android:layout_marginTop="30dp"
-        android:layout_below="@id/textview"
-        android:textColor="@color/colorPrimaryDark"
-        android:layout_alignParentTop="true" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="On"
-        android:id="@+id/button"
-        android:clickable="true"
-        android:onClick="on"
-        android:layout_below="@+id/textview"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="47dp" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Off"
-        android:onClick="off"
-        android:id="@+id/button2"
-        android:layout_alignBaseline="@+id/button"
-        android:layout_alignBottom="@+id/button"
-        android:layout_toLeftOf="@+id/button3"
-        android:layout_toStartOf="@+id/button3"
-        android:layout_marginRight="27dp"
-        android:layout_marginEnd="27dp" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Visibile"
-        android:onClick="visible"
-        android:id="@+id/button3"
-        android:layout_alignBaseline="@+id/button2"
-        android:layout_alignBottom="@+id/button2"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="17dp"
-        android:layout_marginEnd="17dp" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ricerca dispositivi"
-        android:onClick="list"
-        android:id="@+id/button4"
-        android:layout_below="@+id/button"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="18dp" />
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/listView"
-        android:layout_below="@id/button4"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_above="@+id/button5" />
-    <Button
-        android:text="Indietro"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/button5"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="115dp">
 
-    <Button
-        android:text="Dispositivi accoppiati"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/listView"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:id="@+id/button8" />
+            <Button
+                android:layout_width="170dp"
+                android:layout_height="50dp"
+                android:text="Scan"
+                android:id="@+id/StartScanButton"
+                android:layout_marginTop="40dp" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Stop Scanning"
+                android:id="@+id/StopScanButton"
+                android:layout_marginTop="40dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="244dp">
+
+            <TextView
+                android:text="Dispositivi Bluetooth Le"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/titolo"
+                android:textSize="18sp"
+                android:textStyle="normal|bold"
+                tools:textColor="@color/common_google_signin_btn_text_dark_focused" />
+
+            <ListView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/listaDispositivi"
+                android:layout_below="@+id/titolo"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="36dp" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="179dp"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:text="Livello batteria"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:id="@+id/txtLivelloBatteria"
+                    tools:textColor="@color/common_google_signin_btn_text_dark_focused"
+                    android:editable="false" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:id="@+id/txtValoreBatteria"
+                    android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                    android:editable="false" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
 </RelativeLayout>
 
 
