@@ -1,14 +1,11 @@
 package com.example.user.iot;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -23,14 +20,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.user.iot.model.SensorTagBattery;
+import com.example.user.iot.model.BatteryLevel;
+import com.example.user.iot.model.TemperatureLevel;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -42,32 +39,35 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 
-@RequiresApi(api = Build.VERSION_CODES.M)
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class ConnessioneBluetooth extends AppCompatActivity {
 
     BluetoothManager btManager;
     BluetoothAdapter btAdapter;
     BluetoothLeScanner btScanner;
+    BluetoothGatt gattClient;
+    BluetoothDevice device;
+
     Button startScanningButton;
     Button stopScanningButton;
-    private final static int REQUEST_ENABLE_BT = 1;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    TextView txtValoreBatteria;
+    TextView txtValoreTemperatura;
     ListView lv;
+
     ArrayAdapter<String> arrayAdapter;
     HashMap<BluetoothDevice, Integer> bluetoothDevices = new HashMap<BluetoothDevice, Integer>();
-    boolean scan = false;
-    TextView txtValoreBatteria;
-    int batteryLevel = 0;
-    BluetoothGattCallback mGattCallback;
-    BluetoothGatt gattClient;
-    SensorTagBattery batteryInfo;
-    private final UUID batteryServiceUuid = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
-    private final UUID batteryLevelUuid = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
-    BluetoothGattCharacteristic characteristic;
 
+    private final static int REQUEST_ENABLE_BT = 1;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    boolean scan = false;
+
+    String livelloBatteria;
+    String livelloTemperatura;
+
+    Runnable battery;
+    Runnable temperatureThread;
 
     Handler handler = new Handler();
     // Define the code block to be executed
@@ -87,15 +87,17 @@ public class ConnessioneBluetooth extends AppCompatActivity {
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
-    // Run the above code block on the main thread after 2 seconds
 
-
+    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.connessione_bluetooth);
 
         txtValoreBatteria = (TextView) findViewById(R.id.txtValoreBatteria);
         txtValoreBatteria.setText("Sconosciuto");
+        txtValoreTemperatura = (TextView) findViewById(R.id.txtValoreTemperatura);
+        txtValoreTemperatura.setText("Sconosciuto");
         startScanningButton = (Button) findViewById(R.id.StartScanButton);
         startScanningButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -136,71 +138,33 @@ public class ConnessioneBluetooth extends AppCompatActivity {
             builder.show();
         }
 
-        mGattCallback = new BluetoothGattCallback() {
-            @Override
-            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                super.onConnectionStateChange(gatt, status, newState);
 
-                if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothGatt.STATE_CONNECTED) {
-                    gatt.discoverServices();
-                }
-            }
-
+        battery = new Runnable() {
             @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                super.onServicesDiscovered(gatt, status);
+            public void run() {
+
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        txtValoreBatteria.setText(livelloBatteria);
+                    }
+                });
 
             }
-
-            @Override
-            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                super.onCharacteristicRead(gatt, characteristic, status);
-                if(status == BluetoothGatt.GATT_SUCCESS){
-                    Log.d("MYAPP", "VEDIAMO SE SCRIVE" );
-                    batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-                    writeTxt();
-                }
-            }
-
-            @Override
-            public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                super.onCharacteristicWrite(gatt, characteristic, status);
-            }
-
-            @Override
-            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                super.onCharacteristicChanged(gatt, characteristic);
-                batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
-                batteryInfo.getGattClient().disconnect();
-                writeTxt();
-            }
-
-            @Override
-            public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-                super.onDescriptorRead(gatt, descriptor, status);
-            }
-
-            @Override
-            public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-                super.onDescriptorWrite(gatt, descriptor, status);
-            }
-
-            @Override
-            public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-                super.onReliableWriteCompleted(gatt, status);
-            }
-
-            @Override
-            public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                super.onReadRemoteRssi(gatt, rssi, status);
-            }
-
-            @Override
-            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-                super.onMtuChanged(gatt, mtu, status);
-            }
-
         };
+
+        temperatureThread = new Runnable() {
+            @Override
+            public void run() {
+
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        txtValoreTemperatura.setText(livelloTemperatura);
+                    }
+                });
+
+            }
+        };
+
 
         lv = (ListView) findViewById(R.id.listaDispositivi);
         arrayAdapter = new ArrayAdapter<String>(ConnessioneBluetooth.this, android.R.layout.simple_list_item_1);
@@ -210,6 +174,14 @@ public class ConnessioneBluetooth extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        //registerReceiver(dataReceiver, makeIntentFilter());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //registerReceiver(dataReceiver, makeIntentFilter());
+
     }
 
     private ScanCallback leScanCallback = new ScanCallback() {
@@ -283,19 +255,12 @@ public class ConnessioneBluetooth extends AppCompatActivity {
        Set<BluetoothDevice> listaDevices = sortedMap.keySet();
 
         for (BluetoothDevice device : listaDevices){
-            //batteryInfo = new SensorTagBattery();
-            //batteryInfo.getBatteryLevel(device,this, mGattCallback);
+            this.device = device;
+            connectToDevice(device);
+            break;
 
-            gattClient = device.connectGatt(this, true, mGattCallback);
-            BluetoothGattService batteryService = gattClient.getService(batteryServiceUuid);
-            if(batteryService != null) {
-                characteristic = batteryService.getCharacteristic(batteryLevelUuid);
-                if (characteristic != null) {
-                    gattClient.readCharacteristic(characteristic);
-                }
-            }
         }
-        //handler.postDelayed(runnableCode, 300000);
+        handler.postDelayed(runnableCode, 300000);
     }
 
     private static Map<BluetoothDevice, Integer> sortByValue(Map<BluetoothDevice, Integer> unsortMap) {
@@ -322,7 +287,39 @@ public class ConnessioneBluetooth extends AppCompatActivity {
         return sortedMap;
     }
 
-    public void writeTxt(){
-        txtValoreBatteria.setText(String.valueOf(batteryLevel));
+    public void connectToDevice(BluetoothDevice device) {
+        if (gattClient == null) {
+            BatteryLevel batteryLevel = new BatteryLevel();
+            int batteryLevel2 = batteryLevel.getBatteryLevel(gattClient,this, device);
+            livelloBatteria = String.valueOf(batteryLevel2);
+            new Thread(battery).start();
+            TemperatureLevel temperatureLevel = new TemperatureLevel();
+            double temperatureLevel1 = temperatureLevel.getTemperatureLevel(gattClient,this, device);
+            livelloTemperatura = String.valueOf(temperatureLevel1);
+            new Thread(temperatureThread).start();
+
+            gattClient = null;
+        }
     }
+
+//    private final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//            if (intent.getAction().equals("LivelloBatteria")) {
+//                int batteryLevel = intent.getExtras().getInt("LivelloBatteria");
+//                livelloBatteria = String.valueOf(batteryLevel);
+//                new Thread(battery).start();
+//
+//            }
+//        }
+//    };
+//
+//    private static IntentFilter makeIntentFilter() {
+//        final IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction("LivelloBatteria");
+//        return intentFilter;
+//    }
+
 }
+

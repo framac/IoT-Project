@@ -8,7 +8,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.user.iot.MainActivity">
+    tools:context="com.example.user.iot.MainActivity"
+    android:id="@+id/connessioneBluetooth">
 
     <LinearLayout
         android:orientation="vertical"
@@ -65,34 +66,76 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <RelativeLayout
-                android:layout_width="179dp"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="183dp"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:text="Livello batteria"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_centerHorizontal="true"
-                    android:id="@+id/txtLivelloBatteria"
-                    tools:textColor="@color/common_google_signin_btn_text_dark_focused"
-                    android:editable="false" />
-            </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
+                    <TextView
+                        android:text="Livello batteria"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:id="@+id/txtLivelloBatteria"
+                        tools:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:editable="false" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="59dp">
+
+                    <TextView
+                        android:text="Temperatura"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        tools:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:id="@+id/txtTemperatura" />
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="178dp"
                 android:layout_height="match_parent">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_centerHorizontal="true"
-                    android:id="@+id/txtValoreBatteria"
-                    android:textColor="@color/common_google_signin_btn_text_dark_focused"
-                    android:editable="false" />
-            </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:id="@+id/txtValoreBatteria"
+                        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:editable="false" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+                        android:id="@+id/txtValoreTemperatura" />
+                </RelativeLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
 
