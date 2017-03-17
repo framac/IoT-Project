@@ -1,4 +1,4 @@
-package com.example.user.iot;
+package com.example.user.iot.controller;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.user.iot.R;
 import com.example.user.iot.model.BatteryLevel;
 import com.example.user.iot.model.TemperatureLevel;
 
@@ -43,7 +44,7 @@ import java.util.Set;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class ConnessioneBluetooth extends AppCompatActivity {
+public class GestioneConnessioneBA extends AppCompatActivity {
 
     BluetoothManager btManager;
     BluetoothAdapter btAdapter;
@@ -79,10 +80,6 @@ public class ConnessioneBluetooth extends AppCompatActivity {
             }
         }
     };
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
 
     @TargetApi(Build.VERSION_CODES.M)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -131,7 +128,7 @@ public class ConnessioneBluetooth extends AppCompatActivity {
         }
 
         lv = (ListView) findViewById(R.id.listaDispositivi);
-        arrayAdapter = new ArrayAdapter<String>(ConnessioneBluetooth.this, android.R.layout.simple_list_item_1);
+        arrayAdapter = new ArrayAdapter<>(GestioneConnessioneBA.this, android.R.layout.simple_list_item_1);
         lv.setAdapter(arrayAdapter);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
 
@@ -151,7 +148,7 @@ public class ConnessioneBluetooth extends AppCompatActivity {
             if (result.getDevice().getName() != null && (result.getDevice().getName().equals("SensorTag2") || result.getDevice().getName().equals("CC2650 SensorTag")) && !bluetoothDevices.containsKey(result.getDevice())) {
                 bluetoothDevices.put(result.getDevice(), result.getRssi());
                 DecimalFormat df = new DecimalFormat("###.##");
-                arrayAdapter.add("Device Name: " + result.getDevice().getName() + " rssi: " + result.getRssi() + "\n" + "Distance: " + df.format(getDistance(result.getRssi()))+"m");
+                arrayAdapter.add("Device Name: " + result.getDevice().getName() + " rssi: " + result.getRssi() + "\n" + "Distance: " + df.format(getDistance(result.getRssi())) + "m");
                 arrayAdapter.notifyDataSetChanged();
             }
         }
@@ -212,7 +209,7 @@ public class ConnessioneBluetooth extends AppCompatActivity {
         });
 
         Set<BluetoothDevice> listaDevices = sortedMap.keySet();
-        for (BluetoothDevice device : listaDevices){
+        for (BluetoothDevice device : listaDevices) {
             this.device = device;
             connectToDevice(device);
             break;
@@ -247,8 +244,8 @@ public class ConnessioneBluetooth extends AppCompatActivity {
 
     public void connectToDevice(BluetoothDevice device) {
 
-              startService(new Intent(this, BatteryLevel.class).putExtra("device", device));
-              startService(new Intent(this, TemperatureLevel.class).putExtra("device", device));
+        startService(new Intent(this, BatteryLevel.class).putExtra("device", device));
+        startService(new Intent(this, TemperatureLevel.class).putExtra("device", device));
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -261,7 +258,7 @@ public class ConnessioneBluetooth extends AppCompatActivity {
                 txtValoreBatteria = (TextView) findViewById(R.id.txtValoreBatteria);
                 txtValoreBatteria.setText(livelloBatteria);
 
-            } else if(intent.getAction().equals("TemperatureService")){
+            } else if (intent.getAction().equals("TemperatureService")) {
                 double temperatureLevel = intent.getExtras().getDouble("temperatureLevel");
                 livelloTemperatura = String.valueOf(temperatureLevel);
                 txtValoreTemperatura = (TextView) findViewById(R.id.txtValoreTemperatura);
@@ -277,15 +274,14 @@ public class ConnessioneBluetooth extends AppCompatActivity {
         return fi;
     }
 
-    public double getDistance ( int rssi) {
+    public double getDistance(int rssi) {
 
 //         RSSI = txpower - 10 * n * lg (d)
 //         N = 2 (nello spazio libero)
 //         D = 10 ^ ((txpower - RSSI) / (10 * n))
 
-        return (Math . pow ( 10d , (( double ) (-30) - rssi ) / ( 10 * 2 )))/100;
+        return (Math.pow(10d, ((double) (-30) - rssi) / (10 * 2))) / 100;
 
     }
-
 }
 
