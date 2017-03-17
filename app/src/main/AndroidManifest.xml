@@ -26,6 +26,8 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <service android:name=".model.BatteryLevel" />
+        <service android:name=".model.TemperatureLevel" />
     </application>
 
 </manifest>
