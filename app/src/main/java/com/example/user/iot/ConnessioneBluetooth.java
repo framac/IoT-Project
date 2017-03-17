@@ -177,7 +177,6 @@ public class ConnessioneBluetooth extends AppCompatActivity {
                     });
                     builder.show();
                 }
-                return;
             }
         }
     }
