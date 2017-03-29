@@ -29,8 +29,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.user.iot.R;
-import com.example.user.iot.model.BatteryLevel;
-import com.example.user.iot.model.TemperatureLevel;
+import com.example.user.iot.model.BluetoothLeGatt;
 
 import java.text.DecimalFormat;
 import java.util.Collections;
@@ -55,6 +54,8 @@ public class GestioneConnessioneBA extends AppCompatActivity {
     Button stopScanningButton;
     TextView txtValoreBatteria;
     TextView txtValoreTemperatura;
+    TextView txtValoreAccellerazione;
+    TextView txtValoreLuminosità;
     ListView lv;
 
     ArrayAdapter<String> arrayAdapter;
@@ -64,8 +65,12 @@ public class GestioneConnessioneBA extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     boolean scan = false;
 
+    DecimalFormat df = new DecimalFormat("###.##");
+
     String livelloBatteria;
     String livelloTemperatura;
+    boolean battery = false;
+    boolean temp = false;
 
     Handler handler = new Handler();
     // Define the code block to be executed
@@ -147,7 +152,6 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
             if (result.getDevice().getName() != null && (result.getDevice().getName().equals("SensorTag2") || result.getDevice().getName().equals("CC2650 SensorTag")) && !bluetoothDevices.containsKey(result.getDevice())) {
                 bluetoothDevices.put(result.getDevice(), result.getRssi());
-                DecimalFormat df = new DecimalFormat("###.##");
                 arrayAdapter.add("Device Name: " + result.getDevice().getName() + " rssi: " + result.getRssi() + "\n" + "Distance: " + df.format(getDistance(result.getRssi())) + "m");
                 arrayAdapter.notifyDataSetChanged();
             }
@@ -244,8 +248,8 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
     public void connectToDevice(BluetoothDevice device) {
 
-        startService(new Intent(this, BatteryLevel.class).putExtra("device", device));
-        startService(new Intent(this, TemperatureLevel.class).putExtra("device", device));
+        startService(new Intent(this, BluetoothLeGatt.class).putExtra("device", device));
+
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -257,12 +261,22 @@ public class GestioneConnessioneBA extends AppCompatActivity {
                 livelloBatteria = String.valueOf(batteryLevel);
                 txtValoreBatteria = (TextView) findViewById(R.id.txtValoreBatteria);
                 txtValoreBatteria.setText(livelloBatteria);
-
             } else if (intent.getAction().equals("TemperatureService")) {
                 double temperatureLevel = intent.getExtras().getDouble("temperatureLevel");
                 livelloTemperatura = String.valueOf(temperatureLevel);
                 txtValoreTemperatura = (TextView) findViewById(R.id.txtValoreTemperatura);
                 txtValoreTemperatura.setText(livelloTemperatura);
+                temp = true;
+            } else if (intent.getAction().equals("AccelerometerService")) {
+                double accelerometerX = intent.getExtras().getDouble("accelerometerX");
+                double accelerometerY = intent.getExtras().getDouble("accelerometerY");
+                double accelerometerZ = intent.getExtras().getDouble("accelerometerZ");
+                txtValoreAccellerazione = (TextView) findViewById(R.id.txtValoreAccellerazione);
+                txtValoreAccellerazione.setText("X: " +String.valueOf(df.format(accelerometerX)) + "G, Y: " +String.valueOf(df.format(accelerometerY)) + "G, Z: " +String.valueOf(df.format(accelerometerZ))+"G");
+            } else if (intent.getAction().equals("LightService")) {
+                double light = intent.getExtras().getDouble("lightLevel");
+                txtValoreLuminosità = (TextView) findViewById(R.id.txtValoreLuminosità);
+                txtValoreLuminosità.setText(String.valueOf(light) + " Lux");
             }
         }
     };
@@ -271,6 +285,8 @@ public class GestioneConnessioneBA extends AppCompatActivity {
         final IntentFilter fi = new IntentFilter();
         fi.addAction("BatteryService");
         fi.addAction("TemperatureService");
+        fi.addAction("AccelerometerService");
+        fi.addAction("LightService");
         return fi;
     }
 
