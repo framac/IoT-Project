@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -40,6 +41,33 @@ public class BluetoothLeGatt extends IntentService {
     int countTemp = 0;
     int countAcc = 0;
     boolean data = true;
+    boolean conn = false;
+    boolean dati = false;
+
+    Handler handlerConnessione = new Handler();
+    // se non riesco a connettermi al device entro 5 secondi dalla chiamata disconnetto il GattClient
+    private Runnable runnableCodeConnessione = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            if (!conn) {
+               mGatt.disconnect();
+            }
+        }
+    };
+
+
+    Handler handlerDati = new Handler();
+    // se non riesco a leggere tutti i dati entro 10 secondi mi sconnetto il gattClient perchè probabilmente il Beacon è diventato fuori portata
+    private Runnable runnableCodeDati = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            if (!dati) {
+                mGatt.disconnect();
+            }
+        }
+    };
 
     public BluetoothLeGatt() {
         super("ReadingService");
@@ -47,6 +75,9 @@ public class BluetoothLeGatt extends IntentService {
 
     public void getServices(BluetoothDevice device){
         mGatt = device.connectGatt(this, true, gattCallback);
+        //controlla l'avvenuta connessione al dispositivo entro 5 secondi
+        handlerConnessione.postDelayed(runnableCodeConnessione, 5000);
+
     }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -55,7 +86,9 @@ public class BluetoothLeGatt extends IntentService {
             Log.i("onConnectionStateChange", "Status: " + status);
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
+                    conn = true;
                     gatt.discoverServices();
+                    handlerDati.postDelayed(runnableCodeDati, 10000);
                     Log.i("gattCallback", "STATE_CONNECTED");
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
@@ -171,8 +204,8 @@ public class BluetoothLeGatt extends IntentService {
             characteristic = accellerometer.getCharacteristic(UUID_MOV_CONF);
             characteristic.setValue(new byte[]{0x00});
             mGatt.writeCharacteristic(characteristic);
+            dati=true;
             mGatt.disconnect();
-
         }
     }
 

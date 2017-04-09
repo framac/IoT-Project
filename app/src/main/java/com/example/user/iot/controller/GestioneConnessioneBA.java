@@ -1,34 +1,23 @@
 package com.example.user.iot.controller;
 
-import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.example.user.iot.R;
 import com.example.user.iot.model.BluetoothLeGatt;
 
 import java.text.DecimalFormat;
@@ -43,34 +32,18 @@ import java.util.Set;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class GestioneConnessioneBA extends AppCompatActivity {
+public class GestioneConnessioneBA extends Service {
 
     BluetoothManager btManager;
     BluetoothAdapter btAdapter;
     BluetoothLeScanner btScanner;
     BluetoothDevice device;
 
-    Button startScanningButton;
-    Button stopScanningButton;
-    TextView txtValoreBatteria;
-    TextView txtValoreTemperatura;
-    TextView txtValoreAccellerazione;
-    TextView txtValoreLuminosità;
-    ListView lv;
-
-    ArrayAdapter<String> arrayAdapter;
     HashMap<BluetoothDevice, Integer> bluetoothDevices = new HashMap<BluetoothDevice, Integer>();
 
-    private final static int REQUEST_ENABLE_BT = 1;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     boolean scan = false;
 
     DecimalFormat df = new DecimalFormat("###.##");
-
-    String livelloBatteria;
-    String livelloTemperatura;
-    boolean battery = false;
-    boolean temp = false;
 
     Handler handler = new Handler();
     // Define the code block to be executed
@@ -88,62 +61,17 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
     @TargetApi(Build.VERSION_CODES.M)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.connessione_bluetooth);
 
-        startScanningButton = (Button) findViewById(R.id.StartScanButton);
-        startScanningButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startScanning();
-            }
-        });
-
-        stopScanningButton = (Button) findViewById(R.id.StopScanButton);
-        stopScanningButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                stopScanning();
-            }
-        });
-        stopScanningButton.setVisibility(View.INVISIBLE);
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
 
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
         btScanner = btAdapter.getBluetoothLeScanner();
 
-
-        if (btAdapter != null && !btAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-        }
-
-        // Make sure we have access coarse location enabled, if not, prompt the user to enable it
-        if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("This app needs location access");
-            builder.setMessage("Please grant location access so this app can detect peripherals.");
-            builder.setPositiveButton(android.R.string.ok, null);
-            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
-                }
-            });
-            builder.show();
-        }
-
-        lv = (ListView) findViewById(R.id.listaDispositivi);
-        arrayAdapter = new ArrayAdapter<>(GestioneConnessioneBA.this, android.R.layout.simple_list_item_1);
-        lv.setAdapter(arrayAdapter);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
-
         startScanning();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
+        return START_NOT_STICKY;
     }
 
     private ScanCallback leScanCallback = new ScanCallback() {
@@ -152,50 +80,21 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
             if (result.getDevice().getName() != null && (result.getDevice().getName().equals("SensorTag2") || result.getDevice().getName().equals("CC2650 SensorTag")) && !bluetoothDevices.containsKey(result.getDevice())) {
                 bluetoothDevices.put(result.getDevice(), result.getRssi());
-                arrayAdapter.add("Device Name: " + result.getDevice().getName() + " rssi: " + result.getRssi() + "\n" + "Distance: " + df.format(getDistance(result.getRssi())) + "m");
-                arrayAdapter.notifyDataSetChanged();
+
             }
         }
     };
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_COARSE_LOCATION: {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    System.out.println("coarse location permission granted");
-                } else {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Functionality limited");
-                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons when in the background.");
-                    builder.setPositiveButton(android.R.string.ok, null);
-                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                        }
-
-                    });
-                    builder.show();
-                }
-            }
-        }
-    }
-
     public void startScanning() {
         System.out.println("start scanning");
-        arrayAdapter.clear();
-        arrayAdapter.notifyDataSetChanged();
         scan = true;
-        startScanningButton.setVisibility(View.INVISIBLE);
-        stopScanningButton.setVisibility(View.VISIBLE);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 btScanner.startScan(leScanCallback);
             }
         });
-        handler.postDelayed(runnableCode, 10000);
+        handler.postDelayed(runnableCode, 5000);
     }
 
     public void stopScanning() {
@@ -203,8 +102,6 @@ public class GestioneConnessioneBA extends AppCompatActivity {
         bluetoothDevices.clear();
         scan = false;
         System.out.println("stopping scanning");
-        startScanningButton.setVisibility(View.VISIBLE);
-        stopScanningButton.setVisibility(View.INVISIBLE);
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -216,9 +113,12 @@ public class GestioneConnessioneBA extends AppCompatActivity {
         for (BluetoothDevice device : listaDevices) {
             this.device = device;
             connectToDevice(device);
+            double distance = getDistance(sortedMap.get(device));
+            broadcastUpdate(device.getAddress(), distance);
             break;
 
         }
+        // TODO PORTARE RUNNABLECODE A 10000
         handler.postDelayed(runnableCode, 300000);
     }
 
@@ -234,7 +134,7 @@ public class GestioneConnessioneBA extends AppCompatActivity {
         Collections.sort(list, new Comparator<Map.Entry<BluetoothDevice, Integer>>() {
             public int compare(Map.Entry<BluetoothDevice, Integer> o1,
                                Map.Entry<BluetoothDevice, Integer> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
+                return (o2.getValue()).compareTo(o1.getValue());
             }
         });
 
@@ -252,44 +152,6 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
     }
 
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if (intent.getAction().equals("BatteryService")) {
-                int batteryLevel = intent.getExtras().getInt("batteryLevel");
-                livelloBatteria = String.valueOf(batteryLevel);
-                txtValoreBatteria = (TextView) findViewById(R.id.txtValoreBatteria);
-                txtValoreBatteria.setText(livelloBatteria);
-            } else if (intent.getAction().equals("TemperatureService")) {
-                double temperatureLevel = intent.getExtras().getDouble("temperatureLevel");
-                livelloTemperatura = String.valueOf(temperatureLevel);
-                txtValoreTemperatura = (TextView) findViewById(R.id.txtValoreTemperatura);
-                txtValoreTemperatura.setText(livelloTemperatura);
-                temp = true;
-            } else if (intent.getAction().equals("AccelerometerService")) {
-                double accelerometerX = intent.getExtras().getDouble("accelerometerX");
-                double accelerometerY = intent.getExtras().getDouble("accelerometerY");
-                double accelerometerZ = intent.getExtras().getDouble("accelerometerZ");
-                txtValoreAccellerazione = (TextView) findViewById(R.id.txtValoreAccellerazione);
-                txtValoreAccellerazione.setText("X: " +String.valueOf(df.format(accelerometerX)) + "G, Y: " +String.valueOf(df.format(accelerometerY)) + "G, Z: " +String.valueOf(df.format(accelerometerZ))+"G");
-            } else if (intent.getAction().equals("LightService")) {
-                double light = intent.getExtras().getDouble("lightLevel");
-                txtValoreLuminosità = (TextView) findViewById(R.id.txtValoreLuminosità);
-                txtValoreLuminosità.setText(String.valueOf(light) + " Lux");
-            }
-        }
-    };
-
-    private static IntentFilter makeIntentFilter() {
-        final IntentFilter fi = new IntentFilter();
-        fi.addAction("BatteryService");
-        fi.addAction("TemperatureService");
-        fi.addAction("AccelerometerService");
-        fi.addAction("LightService");
-        return fi;
-    }
-
     public double getDistance(int rssi) {
 
 //         RSSI = txpower - 10 * n * lg (d)
@@ -298,6 +160,19 @@ public class GestioneConnessioneBA extends AppCompatActivity {
 
         return (Math.pow(10d, ((double) (-30) - rssi) / (10 * 2))) / 100;
 
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    private void broadcastUpdate(String macAddress, double distance) {
+        Intent resIntent = new Intent("DeviceParameters");
+        resIntent.putExtra("macAddress", macAddress);
+        resIntent.putExtra("distance", distance);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
     }
 }
 
