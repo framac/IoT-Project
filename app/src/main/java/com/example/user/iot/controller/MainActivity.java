@@ -20,7 +20,7 @@ import com.example.user.iot.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button b6,b7;
+    Button accedi,registrati;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -51,16 +51,17 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        b6 = (Button) findViewById(R.id.button6);
-        b7 = (Button) findViewById(R.id.button7);
+        accedi = (Button) findViewById(R.id.Accedi);
+        registrati = (Button) findViewById(R.id.Registrati);
 
-        b7.setOnClickListener(new View.OnClickListener() {
+        registrati.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent openPageMappa= new Intent(getApplicationContext(),Mappa.class);
-                startActivity(openPageMappa);
+                Intent openPageBluetooth = new Intent(getApplicationContext(),Registrazione.class);
+                startActivity(openPageBluetooth);
 
             }
         });
