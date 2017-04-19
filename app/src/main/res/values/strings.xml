@@ -38,7 +38,9 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    
+
+    <!-- Server -->
+    <string name="saveDatiAmb">http://10.0.0.10:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
     
     
 </resources>

@@ -111,7 +111,7 @@ public class Mappa extends AppCompatActivity
         super.onDestroy();
         if(service){
             stopService(new Intent(getBaseContext(), GestioneConnessioneBA.class));
-            unregisterReceiver(receiver);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         }
     }
 

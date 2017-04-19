@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
@@ -51,17 +52,23 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
         accedi = (Button) findViewById(R.id.Accedi);
         registrati = (Button) findViewById(R.id.Registrati);
 
         registrati.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent openPageBluetooth = new Intent(getApplicationContext(),Registrazione.class);
-                startActivity(openPageBluetooth);
+                Intent registrazione = new Intent(getApplicationContext(),Registrazione.class);
+                startActivity(registrazione);
+
+            }
+        });
+
+        accedi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mappa = new Intent(getApplicationContext(),Mappa.class);
+                startActivity(mappa);
 
             }
         });

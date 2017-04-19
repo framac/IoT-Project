@@ -11,6 +11,17 @@ import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.user.iot.R;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,18 +42,28 @@ public class BluetoothLeGatt extends IntentService {
             UUID_MOV_DATA = fromString("f000aa81-0451-4000-b000-000000000000"),
             UUID_MOV_CONF = fromString("f000aa82-0451-4000-b000-000000000000");
 
-
-    public static BluetoothGattService temperature;
-    public static BluetoothGattService opt;
-    public static BluetoothGattService accellerometer;
+    private static BluetoothGattService temperature;
+    private static BluetoothGattService opt;
+    private static BluetoothGattService accellerometer;
     private BluetoothGatt mGatt;
-    List<BluetoothGattService> services;
-    int countLux = 0;
-    int countTemp = 0;
-    int countAcc = 0;
-    boolean data = true;
-    boolean conn = false;
-    boolean dati = false;
+
+    private List<BluetoothGattService> services;
+
+    private int countLux = 0;
+    private int countTemp = 0;
+    private int countAcc = 0;
+
+    private int batteryLevel;
+    private double temperatureLevel;
+    Point3D vAcc;
+    Point3D vOpt;
+
+    private boolean data = true;
+    private boolean conn = false;
+    private boolean dati = false;
+
+    private String macAddress;
+
 
     Handler handlerConnessione = new Handler();
     // se non riesco a connettermi al device entro 5 secondi dalla chiamata disconnetto il GattClient
@@ -77,7 +98,7 @@ public class BluetoothLeGatt extends IntentService {
         mGatt = device.connectGatt(this, true, gattCallback);
         //controlla l'avvenuta connessione al dispositivo entro 5 secondi
         handlerConnessione.postDelayed(runnableCodeConnessione, 5000);
-
+        macAddress = device.getAddress();
     }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -113,7 +134,7 @@ public class BluetoothLeGatt extends IntentService {
 
                 byte[] value = characteristic.getValue();
                 Point3D v = Sensor.IR_TEMPERATURE.convert(value);
-                    double temperatureLevel = v.x;
+                    temperatureLevel = v.x;
                     if(v.x == 0 && countTemp < 20){
                         countTemp++;
                         gatt.readCharacteristic(characteristic);
@@ -122,28 +143,28 @@ public class BluetoothLeGatt extends IntentService {
                     }
             } else if (characteristic.getUuid().equals(UUID_OPT_DATA)){
                 byte[] value = characteristic.getValue();
-                Point3D v = Sensor.LUXOMETER.convert(value);
-                    if(v.x == 0 && countLux < 20){
+                vOpt = Sensor.LUXOMETER.convert(value);
+                    if(vOpt.x == 0 && countLux < 20){
                         countLux++;
                         gatt.readCharacteristic(characteristic);
                     } else{
-                        broadcastUpdate(v.x, "lightService");
+                        broadcastUpdate(vOpt.x, "lightService");
                     }
 
             } else if (characteristic.getUuid().equals(UUID_MOV_DATA)){
                 byte[] value = characteristic.getValue();
-                Point3D v = Sensor.MOVEMENT_ACC.convert(value);
+                 vAcc = Sensor.MOVEMENT_ACC.convert(value);
 
-                if(v.x == 0 && v.y == 0 && v.z == 0 && countAcc < 20){
+                if(vAcc.x == 0 && vAcc.y == 0 && vAcc.z == 0 && countAcc < 20){
                     countAcc++;
                     gatt.readCharacteristic(characteristic);
                 } else{
-                    broadcastUpdate(v.x, v.y, v.z);
+                    broadcastUpdate(vAcc.x, vAcc.y, vAcc.z);
                 }
 
             } else {
                 Log.i("onCharacteristicRead", characteristic.toString());
-                int batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+                batteryLevel = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
                 broadcastUpdate(batteryLevel);
 
             }
@@ -206,6 +227,23 @@ public class BluetoothLeGatt extends IntentService {
             mGatt.writeCharacteristic(characteristic);
             dati=true;
             mGatt.disconnect();
+            RequestQueue mRequestQueue= Volley.newRequestQueue(this);
+            JSONObject letturaDati=new JSONObject();
+            try {
+
+                letturaDati.put("macAdd", macAddress);
+                letturaDati.put("batteria", batteryLevel);
+                letturaDati.put("temperatura", temperatureLevel);
+                letturaDati.put("lux", vOpt.x);
+                letturaDati.put("xAcc", vAcc.x);
+                letturaDati.put("yAcc", vAcc.y);
+                letturaDati.put("zAcc", vAcc.z);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.saveDatiAmb), letturaDati, postListener, errorListener);
+            mRequestQueue.add(request);
         }
     }
 
@@ -265,4 +303,32 @@ public class BluetoothLeGatt extends IntentService {
             }
         }
     }
+
+    private Response.ErrorListener errorListener=new Response.ErrorListener()
+    {
+        @Override
+        public void onErrorResponse(VolleyError err)
+        {
+            Toast.makeText(BluetoothLeGatt.this, "Errore di rete. Non è stato possibile inviare la lettura al server", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
+    {
+        @Override
+        public void onResponse(JSONObject response) {
+
+            try {
+                String ris=response.getString("response");
+                if(ris.equals("true")) {
+                    Toast.makeText(BluetoothLeGatt.this, "Dati salvati", Toast.LENGTH_SHORT).show();
+                } else{
+                    Toast.makeText(BluetoothLeGatt.this, "Dati non salvati", Toast.LENGTH_SHORT).show();
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }
