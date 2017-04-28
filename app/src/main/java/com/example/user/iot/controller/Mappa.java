@@ -20,8 +20,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.TextView;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.user.iot.R;
@@ -33,30 +37,9 @@ import java.util.ArrayList;
 public class Mappa extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private ArrayList<Node> list;
-    private PointF point;
     private Node node;
     private int i;
     boolean service = false;
-
-    private PointF coordConverter(PointF point, int piano){
-        switch(piano) {
-            case 145: point.x = Math.round((point.x - 52) * 6.5);
-                point.y = Math.round((1600 - ((point.y - 261.5) * 6.5)));
-                break;
-
-            case 150: point.x = Math.round((point.x - 51)*6.2);
-                point.y = Math.round( (1572-((point.y-255.6)*6.2)));
-                break;
-
-            case 155: point.x = Math.round((point.x - 53)*6.4);
-                point.y = Math.round( (1600-((point.y-259)*6.4)));
-                break;
-            default: point.x = 0;
-                     point.y = 0;
-                     break;
-        }
-        return point;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -76,10 +59,24 @@ public class Mappa extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //creazione e controllo della view
-        CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);
-        //customMapView.setZoomEnabled(false);
+        final TextView text = (TextView) findViewById(R.id.textView);
+        final CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);
+        final GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                if (customMapView.isReady()) {
+                    PointF sCoord = customMapView.viewToSourceCoord(e.getX(), e.getY());
+                    text.setText(sCoord.toString());
+                }
+            }
+        });
         customMapView.setImage(ImageSource.resource(R.drawable.floor150));
+        customMapView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return gestureDetector.onTouchEvent(motionEvent);
+            }
+        });
 
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
@@ -159,13 +156,9 @@ public class Mappa extends AppCompatActivity
             for(i=0;i<2;i++){
                 if(i==0) {
                     node = new Node(150,500,R.drawable.purple,150); //EMRL
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 if(i==1) {
                     node = new Node(135,470,R.drawable.purple,150); //R2
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 list.add(i,node);
             }
@@ -175,13 +168,9 @@ public class Mappa extends AppCompatActivity
             for(i=0;i<2;i++){
                 if(i==0) {
                     node = new Node(110,465,R.drawable.purple,150); //G1G2
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 if(i==1) {
                     node = new Node(92,484,R.drawable.purple,150); //A5
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 list.add(i,node);
             }
@@ -191,13 +180,9 @@ public class Mappa extends AppCompatActivity
             for(i=0;i<2;i++){
                 if(i==0) {
                     node = new Node(90,480,R.drawable.purple,145); //RG1
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 if(i==1) {
                     node = new Node(133,480,R.drawable.purple,145); //RG2
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 list.add(i,node);
             }
@@ -207,13 +192,9 @@ public class Mappa extends AppCompatActivity
             for(i=0;i<2;i++){
                 if(i==0) {
                     node = new Node(133,467,R.drawable.purple,155); //WC1
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 if(i==1) {
                     node = new Node(149,472,R.drawable.purple,155); //WC2
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 list.add(i,node);
             }
@@ -223,13 +204,9 @@ public class Mappa extends AppCompatActivity
             for(i=0;i<2;i++){
                 if(i==0) {
                     node = new Node(159,456,R.drawable.purple,155); //ACQ
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 if(i==1) {
                     node = new Node(160,445,R.drawable.purple,155); //UP
-                    point = coordConverter(node.getPoint(),node.getPiano());
-                    node.setPoint(point);
                 }
                 list.add(i,node);
             }

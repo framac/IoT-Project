@@ -39,15 +39,42 @@ public class CustomMapView extends SubsamplingScaleImageView {
         pin = Bitmap.createScaledBitmap(pin, (int)w, (int)h, true);
     }
 
-    public void setNode(Node node) {
-        this.node = node;
-        initialise();
-        plotRoute = false;
+    private PointF coordConverter(PointF point, int piano){
+        switch(piano) {
+            case 145: point.x = Math.round((point.x - 52) * 6.5);
+                point.y = Math.round((1600 - ((point.y - 261.5) * 6.5)));
+                break;
+
+            case 150: point.x = Math.round((point.x - 51)*6.2);
+                point.y = Math.round( (1572-((point.y-255.6)*6.2)));
+                break;
+
+            case 155: point.x = Math.round((point.x - 53)*6.4);
+                point.y = Math.round( (1600-((point.y-259)*6.4)));
+                break;
+            default: point.x = 0;
+                point.y = 0;
+                break;
+        }
+        return point;
     }
 
-    public void setRoute(ArrayList<Node> nodeList){
-        this.nodeList = nodeList;
-        plotRoute = true;
+    public void setNode(Node node) {
+        PointF point = coordConverter(node.getPoint(),node.getPiano());
+        node.setPoint(point);
+        nodeList = new ArrayList<>();
+        nodeList.add(node);
+    }
+    public void addNode(Node node){
+        nodeList.add(node);
+    }
+    public void setRoute(ArrayList<Node> list){
+        nodeList = list;
+        for (int i = 0; i < nodeList.size(); i++) {
+            node = nodeList.get(i);
+            PointF point = coordConverter(node.getPoint(),node.getPiano());
+            nodeList.get(i).setPoint(point);
+        }
     }
 
     public Node getNode() {
@@ -69,23 +96,7 @@ public class CustomMapView extends SubsamplingScaleImageView {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
 
-        //punto singolo
-        if (sPin != null && pin != null && !plotRoute) {
-            sPin = node.getPoint();
-
-            //vengono convertite le coordinate della posizione del pin sulla mappa
-            PointF vPin = sourceToViewCoord(sPin);
-
-            //viene regolato quale punto DELL'IMMAGINE DEL PIN verrà ancorato alla mappa
-            float vX = vPin.x - (pin.getWidth() / 2);
-            float vY = vPin.y - pin.getHeight();
-
-            //viene disegnato il pin sulla mappa
-            canvas.drawBitmap(pin, vX, vY, paint);
-        }
-
-        //punti multipli
-        if (nodeList != null && plotRoute) {
+        if (nodeList != null) {
             for (int i = 0; i < nodeList.size(); i++) {
                 node = nodeList.get(i);
                 sPin = node.getPoint();
@@ -93,7 +104,6 @@ public class CustomMapView extends SubsamplingScaleImageView {
                 initialise();
 
                 //vengono convertite le coordinate della posizione del pin sulla mappa
-
                 PointF vPin = sourceToViewCoord(sPin);
 
                 //viene regolato quale punto DELL'IMMAGINE DEL PIN verrà ancorato alla mappa
