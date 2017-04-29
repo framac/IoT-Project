@@ -67,6 +67,19 @@ public class Mappa extends AppCompatActivity
                 if (customMapView.isReady()) {
                     PointF sCoord = customMapView.viewToSourceCoord(e.getX(), e.getY());
                     text.setText(sCoord.toString());
+                    list = customMapView.getRoute();
+                    if(list != null) {
+                        for (i = 0; i < list.size(); i++) {
+                            node = list.get(i);
+                            if(node.equalsArea(sCoord)){
+                                AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
+                                builder.setTitle("Codice Beacon");
+                                builder.setMessage("Dati beacon" );
+                                builder.setPositiveButton(android.R.string.ok, null);
+                                builder.show();
+                            }
+                        }
+                    }
                 }
             }
         });

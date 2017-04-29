@@ -38,4 +38,13 @@ public class Node {
         return piano;
     }
 
+    public boolean equalsArea(PointF point1){
+        if(point1.x >= (point.x-20) && point1.x <= (point.x+20)){
+            if(point1.y >= (point.y-20) && point1.y <= (point.y+20)){
+                return true;
+            }
+        }
+       return false;
+    }
+
 }

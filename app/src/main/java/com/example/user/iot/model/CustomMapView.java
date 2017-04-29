@@ -18,7 +18,6 @@ public class CustomMapView extends SubsamplingScaleImageView {
     private PointF sPin;
     private Bitmap pin;
     private ArrayList<Node> nodeList;
-    private boolean plotRoute;
 
     public CustomMapView(Context context) {
 
@@ -65,9 +64,11 @@ public class CustomMapView extends SubsamplingScaleImageView {
         nodeList = new ArrayList<>();
         nodeList.add(node);
     }
+
     public void addNode(Node node){
         nodeList.add(node);
     }
+
     public void setRoute(ArrayList<Node> list){
         nodeList = list;
         for (int i = 0; i < nodeList.size(); i++) {
