@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
@@ -53,7 +54,7 @@ public class Mappa extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -71,10 +72,10 @@ public class Mappa extends AppCompatActivity
                     if(list != null) {
                         for (i = 0; i < list.size(); i++) {
                             node = list.get(i);
-                            if(node.equalsArea(sCoord)){
+                            if(node.isNear(sCoord)){
                                 AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
-                                builder.setTitle("Codice Beacon");
-                                builder.setMessage("Dati beacon" );
+                                builder.setTitle("Node selezionato");
+                                builder.setMessage(node.getPoint().toString() );
                                 builder.setPositiveButton(android.R.string.ok, null);
                                 builder.show();
                             }
@@ -159,7 +160,7 @@ public class Mappa extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);

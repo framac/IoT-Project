@@ -1,5 +1,6 @@
 package com.example.user.iot.model;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 
 public class CustomMapView extends SubsamplingScaleImageView {
     private Node node;
-    private PointF sPin;
     private Bitmap pin;
     private ArrayList<Node> nodeList;
 
@@ -32,7 +32,7 @@ public class CustomMapView extends SubsamplingScaleImageView {
     private void initialise() {
         //viene creata e scalata l'immagine del pin in base alla dpi dello schermo del tel
         float density = getResources().getDisplayMetrics().densityDpi;
-        pin = BitmapFactory.decodeResource(this.getResources(), node.getId());
+        pin = BitmapFactory.decodeResource(this.getResources(), node.getDrawable());
         float w = (density/420f) * pin.getWidth();
         float h = (density/420f) * pin.getHeight();
         pin = Bitmap.createScaledBitmap(pin, (int)w, (int)h, true);
@@ -59,7 +59,7 @@ public class CustomMapView extends SubsamplingScaleImageView {
     }
 
     public void setNode(Node node) {
-        PointF point = coordConverter(node.getPoint(),node.getPiano());
+        PointF point = coordConverter(node.getPoint(),node.getFloor());
         node.setPoint(point);
         nodeList = new ArrayList<>();
         nodeList.add(node);
@@ -73,7 +73,7 @@ public class CustomMapView extends SubsamplingScaleImageView {
         nodeList = list;
         for (int i = 0; i < nodeList.size(); i++) {
             node = nodeList.get(i);
-            PointF point = coordConverter(node.getPoint(),node.getPiano());
+            PointF point = coordConverter(node.getPoint(),node.getFloor());
             nodeList.get(i).setPoint(point);
         }
     }
@@ -88,29 +88,24 @@ public class CustomMapView extends SubsamplingScaleImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         // verifica che la piantina sia stata caricata
         if (!isReady()) {
             return;
         }
-
-        Paint paint = new Paint();
+        @SuppressLint("DrawAllocation") Paint paint = new Paint();
         paint.setAntiAlias(true);
-
+        PointF sPin;
         if (nodeList != null) {
             for (int i = 0; i < nodeList.size(); i++) {
                 node = nodeList.get(i);
                 sPin = node.getPoint();
                 //viene creata e scalata l'immagine del pin in base alla dpi dello schermo del tel
                 initialise();
-
                 //vengono convertite le coordinate della posizione del pin sulla mappa
                 PointF vPin = sourceToViewCoord(sPin);
-
                 //viene regolato quale punto DELL'IMMAGINE DEL PIN verrà ancorato alla mappa
                 float vX = vPin.x - (pin.getWidth() / 2);
                 float vY = vPin.y - pin.getHeight();
-
                 //viene disegnato il pin sulla mappa
                 canvas.drawBitmap(pin, vX, vY, paint);
             }

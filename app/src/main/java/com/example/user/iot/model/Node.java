@@ -3,42 +3,44 @@ package com.example.user.iot.model;
 import android.graphics.PointF;
 
 public class Node {
+    String id, macAdress;
     private PointF point;
-    private int id, piano; //id è il simbolo del nodo
+    private int drawable, floor, batteryLevel;
+    double distance, temperatureLevel, accelerometerX, accelerometerY, accelerometerZ, lightLevel;
 
-    public Node(PointF point, int id, int piano){
+    public Node(PointF point, int drawable, int floor){
         this.point = point;
-        this.id = id;
-        this.piano = piano;
+        this.drawable = drawable;
+        this.floor = floor;
     }
 
-    public Node(float x, float y, int id, int piano){
+    public Node(float x, float y, int drawable, int floor){
         this.point = new PointF(x,y);
-        this.id = id;
-        this.piano= piano;
+        this.drawable = drawable;
+        this.floor = floor;
     }
 
-    public void setPoint(PointF point){this.point = point;}
+    void setPoint(PointF point){this.point = point;}
 
     public PointF getPoint(){return point;}
 
-    public void setId(int id){
-        this.id = id;
+    public void setDrawable(int drawable){
+        this.drawable = drawable;
     }
 
-    public int getId(){
-        return id;
+    public int getDrawable(){
+        return drawable;
     }
 
-    public void setPiano(int piano){
-        this.piano = piano;
+    public void setFloor(int floor){
+        this.floor = floor;
     }
 
-    public int getPiano(){
-        return piano;
+    int getFloor(){
+        return floor;
     }
 
-    public boolean equalsArea(PointF point1){
+    public boolean isNear(PointF point1){
         if(point1.x >= (point.x-20) && point1.x <= (point.x+20)){
             if(point1.y >= (point.y-20) && point1.y <= (point.y+20)){
                 return true;
