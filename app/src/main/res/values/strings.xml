@@ -40,7 +40,8 @@
     <string name="menu_stop">Stop</string>
 
     <!-- Server -->
-    <string name="saveDatiAmb">http://10.0.0.10:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
+    <string name="saveDatiAmb">http://localhost:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
+    <string name="saveToken">http://localhost:8080/IotServer/utenti/saveToken</string>
     
     
 </resources>
