@@ -3,10 +3,10 @@ package com.example.user.iot.model;
 import android.graphics.PointF;
 
 public class Node {
-    String id, macAdress;
+    private String id, macAdress;
     private PointF point;
     private int drawable, floor, batteryLevel;
-    double distance, temperatureLevel, accelerometerX, accelerometerY, accelerometerZ, lightLevel;
+    private double distance, temperatureLevel, accelerometerX, accelerometerY, accelerometerZ, lightLevel;
 
     public Node(PointF point, int drawable, int floor){
         this.point = point;
@@ -20,7 +20,7 @@ public class Node {
         this.floor = floor;
     }
 
-    void setPoint(PointF point){this.point = point;}
+    public void setPoint(PointF point){this.point = point;}
 
     public PointF getPoint(){return point;}
 
@@ -36,7 +36,7 @@ public class Node {
         this.floor = floor;
     }
 
-    int getFloor(){
+    public int getFloor(){
         return floor;
     }
 
