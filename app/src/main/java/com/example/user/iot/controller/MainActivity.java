@@ -7,49 +7,27 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity {
 
     Button accedi,registrati;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
-    public static Context context;
-    //Shared preferences
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    SharedPreferences.Editor editor;
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = getApplicationContext();
-
-        //richiesta
-        if(!prefs.getBoolean("firstTime", false)) {
-            RequestQueue mRequestQueue= Volley.newRequestQueue(this);
-            JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.saveNewUser), null, postListener, errorListener);
-            mRequestQueue.add(request);
-        }
 
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
@@ -131,38 +109,5 @@ public class MainActivity extends AppCompatActivity {
             builder.show();
         }
     }
-
-    private Response.ErrorListener errorListener=new Response.ErrorListener()
-    {
-        @Override
-        public void onErrorResponse(VolleyError err)
-        {
-            Toast.makeText(MainActivity.context, "Errore di rete. Non è stato possibile accedere al server", Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
-    {
-        @Override
-        public void onResponse(JSONObject response) {
-
-            try {
-                String ris=response.getString("response");
-                if(!ris.equals("null")) {
-                    editor = prefs.edit();
-                    editor.putBoolean("firstTime", true);
-                    editor.putString("username",ris);
-                    editor.commit();
-                    MyFirebaseInstanceIDService.sendRegistrationToServer(ris);
-                    Toast.makeText(MainActivity.context, "Username casuale memorizzato", Toast.LENGTH_SHORT).show();
-                } else{
-                    Toast.makeText(MainActivity.context, "Non è stato generato lo username", Toast.LENGTH_SHORT).show();
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    };
 }
 

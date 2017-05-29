@@ -18,19 +18,16 @@
                 android:title="Piano 155" />
             <item
                 android:id="@+id/test1"
-                android:title="EMRL-R2-150" />
+                android:title="Test1" />
             <item
                 android:id="@+id/test2"
-                android:title="G1G2-A5-150" />
+                android:title="Test2" />
             <item
                 android:id="@+id/test3"
-                android:title="RG1-RG2-145" />
+                android:title="Test3" />
             <item
                 android:id="@+id/test4"
-                android:title="WC1-WC2-155"></item>
-            <item
-                android:id="@+id/test5"
-                android:title="ACQ_UP_155"></item>
+                android:title="Test4"></item>
 
 
     </group>

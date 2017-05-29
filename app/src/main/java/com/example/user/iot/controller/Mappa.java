@@ -28,7 +28,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.example.user.iot.R;
 import com.example.user.iot.model.CustomMapView;
 import com.example.user.iot.model.Node;
@@ -39,7 +38,10 @@ public class Mappa extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private ArrayList<Node> list;
     private Node node;
-    private int i;
+    private TextView text;
+    private CustomMapView customMapView;
+    private MapViewController mapViewController;
+    private GestureDetector gestureDetector;
     boolean service = false;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -59,18 +61,18 @@ public class Mappa extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        final TextView text = (TextView) findViewById(R.id.textView);
-        final CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);
-        final GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+        text = (TextView) findViewById(R.id.textView);
+        customMapView = (CustomMapView) findViewById(R.id.map);
+        mapViewController = new MapViewController(customMapView);
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
-                if (customMapView.isReady()) {
-                    PointF sCoord = customMapView.viewToSourceCoord(e.getX(), e.getY());
+                if (mapViewController.isMapReady()) {
+                    PointF sCoord = mapViewController.sourceImgCoord(e.getX(), e.getY());
                     text.setText(sCoord.toString());
-                    list = customMapView.getRoute();
+                    list = mapViewController.getCurrentList();
                     if(list != null) {
-                        for (i = 0; i < list.size(); i++) {
+                        for (int i = 0; i < list.size(); i++) {
                             node = list.get(i);
                             if(node.isNear(sCoord)){
                                 AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
@@ -84,8 +86,9 @@ public class Mappa extends AppCompatActivity
                 }
             }
         });
-        customMapView.setImage(ImageSource.resource(R.drawable.floor150));
-        customMapView.setOnTouchListener(new View.OnTouchListener() {
+
+        mapViewController.changeFloor(145);
+        mapViewController.setListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 return gestureDetector.onTouchEvent(motionEvent);
@@ -163,81 +166,55 @@ public class Mappa extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);
 
         if (id == R.id.test1) {
             list = new ArrayList<>();
-            for(i=0;i<2;i++){
+            for(int i=0;i<10;i++){
                 if(i==0) {
-                    node = new Node(150,500,R.drawable.purple,150); //EMRL
-                }
-                if(i==1) {
-                    node = new Node(135,470,R.drawable.purple,150); //R2
+                    node = new Node(150,500,R.drawable.beacon,150); //EMRL
+                }if(i==1) {
+                    node = new Node(135,470,R.drawable.flame,150); //R2
+                }if(i==2) {
+                    node = new Node(159,456,R.drawable.beacon,155); //ACQ
+                }if(i==3) {
+                    node = new Node(160,445,R.drawable.beacon,155); //UP
+                }if(i==4) {
+                    node = new Node(110,465,R.drawable.user,150); //G1G2
+                }if(i==5) {
+                    node = new Node(92,484,R.drawable.target,150); //A5
+                }if(i==6) {
+                    node = new Node(90,480,R.drawable.user,145); //RG1
+                }if(i==7) {
+                    node = new Node(133,480,R.drawable.flame,145); //RG2
+                }if(i==8) {
+                    node = new Node(133,467,R.drawable.target,155); //WC1
+                }if(i==9) {
+                    node = new Node(149,472,R.drawable.beacon,155); //WC2
                 }
                 list.add(i,node);
             }
-            customMapView.setImage(ImageSource.resource(R.drawable.floor150));
-        } else if (id == R.id.test2) {
-            list = new ArrayList<>();
-            for(i=0;i<2;i++){
-                if(i==0) {
-                    node = new Node(110,465,R.drawable.purple,150); //G1G2
-                }
-                if(i==1) {
-                    node = new Node(92,484,R.drawable.purple,150); //A5
-                }
-                list.add(i,node);
-            }
-            customMapView.setImage(ImageSource.resource(R.drawable.floor150));
-        } else if (id == R.id.test3) {
-            list = new ArrayList<>();
-            for(i=0;i<2;i++){
-                if(i==0) {
-                    node = new Node(90,480,R.drawable.purple,145); //RG1
-                }
-                if(i==1) {
-                    node = new Node(133,480,R.drawable.purple,145); //RG2
-                }
-                list.add(i,node);
-            }
-            customMapView.setImage(ImageSource.resource(R.drawable.floor145));
-        } else if (id == R.id.test4) {
-            list = new ArrayList<>();
-            for(i=0;i<2;i++){
-                if(i==0) {
-                    node = new Node(133,467,R.drawable.purple,155); //WC1
-                }
-                if(i==1) {
-                    node = new Node(149,472,R.drawable.purple,155); //WC2
-                }
-                list.add(i,node);
-            }
-            customMapView.setImage(ImageSource.resource(R.drawable.floor155));
-        } else if (id == R.id.test5){
-            list = new ArrayList<>();
-            for(i=0;i<2;i++){
-                if(i==0) {
-                    node = new Node(159,456,R.drawable.purple,155); //ACQ
-                }
-                if(i==1) {
-                    node = new Node(160,445,R.drawable.purple,155); //UP
-                }
-                list.add(i,node);
-            }
-            customMapView.setImage(ImageSource.resource(R.drawable.floor155));
+            mapViewController.clearFloor(145);
+            mapViewController.clearFloor(150);
+            mapViewController.clearFloor(155);
+            mapViewController.addNodes(list);
+            mapViewController.changeFloor(150);
+            //customMapView.setImage(ImageSource.resource(R.drawable.floor150));
         } else if (id == R.id.piano145){
-            list = new ArrayList<>();
-            customMapView.setImage(ImageSource.resource(R.drawable.floor145));
+            mapViewController.changeFloor(145);
+            //list = new ArrayList<>();
+            //customMapView.setImage(ImageSource.resource(R.drawable.floor145));
         } else if (id == R.id.piano150){
-            list = new ArrayList<>();
-            customMapView.setImage(ImageSource.resource(R.drawable.floor150));
+            mapViewController.changeFloor(150);
+            //list = new ArrayList<>();
+            //customMapView.setImage(ImageSource.resource(R.drawable.floor150));
         } else if (id == R.id.piano155){
-            list = new ArrayList<>();
-            customMapView.setImage(ImageSource.resource(R.drawable.floor155));
+            mapViewController.changeFloor(155);
+            //list = new ArrayList<>();
+            //customMapView.setImage(ImageSource.resource(R.drawable.floor155));
         }
 
 
-        customMapView.setRoute(list);
+        //customMapView.setRoute(list);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
