@@ -18,7 +18,8 @@ import org.json.JSONObject;
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = "MyFirebaseIIDService";
-    public static String username = null;
+    public static String username;
+    public static boolean primoAccesso=false;
     /**
      * Called if InstanceID token is updated. This may occur if the security of
      * the previous token had been compromised. Note that this is called when the InstanceID token
@@ -46,12 +47,12 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      *
      * @param token The new token.
      */
-    public void sendRegistrationToServer(String token) {
+    public static void sendRegistrationToServer(String token) {
         RequestQueue mRequestQueue = Volley.newRequestQueue(MainActivity.context);
         JSONObject letturaDati=new JSONObject();
         try {
             //TODO sostituire username con valore dopo login
-           // while(username==null){
+            // while(username==null){
 
             //}
             letturaDati.put("username", "mike");
@@ -65,7 +66,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         mRequestQueue.add(request);
     }
 
-    private Response.ErrorListener errorListener=new Response.ErrorListener()
+    public static Response.ErrorListener errorListener=new Response.ErrorListener()
     {
         @Override
         public void onErrorResponse(VolleyError err)
@@ -74,7 +75,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         }
     };
 
-    private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
+    public static Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
     {
         @Override
         public void onResponse(JSONObject response) {

@@ -42,6 +42,6 @@
     <!-- Server -->
     <string name="saveDatiAmb">http://localhost:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
     <string name="saveToken">http://localhost:8080/IotServer/utenti/saveToken</string>
-    
+    <string name="saveNewUser">http://localhost:8080/IotServer/utenti/getNewUsername</string>
     
 </resources>
