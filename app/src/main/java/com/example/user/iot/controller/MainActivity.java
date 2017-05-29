@@ -23,12 +23,14 @@ public class MainActivity extends AppCompatActivity {
     Button accedi,registrati;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
+    public static Context context;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        context = this.getBaseContext();
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
 
