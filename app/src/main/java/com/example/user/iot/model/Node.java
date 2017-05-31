@@ -2,6 +2,8 @@ package com.example.user.iot.model;
 
 import android.graphics.PointF;
 
+import com.example.user.iot.R;
+
 public class Node {
     private String id, macAdress;
     private PointF point;
@@ -20,13 +22,32 @@ public class Node {
         this.floor = floor;
     }
 
+    public Node(float x, float y, String type, int floor){
+        this.point = new PointF(x,y);
+        this.floor = floor;
+        setDrawable(type);
+    }
+
+    public void setDrawable(String type){
+        switch(type){
+            case "Aula": drawable = R.drawable.target;
+                break;
+            case "Uscita": drawable = R.drawable.exit;
+                break;
+            case "Beacon": drawable = R.drawable.beacon;
+                break;
+            case "Emergenza": drawable = R.drawable.flame;
+                break;
+            case "Utente": drawable = R.drawable.user;
+                break;
+            default: drawable = R.drawable.purple;
+                break;
+        }
+    }
+
     public void setPoint(PointF point){this.point = point;}
 
     public PointF getPoint(){return point;}
-
-    public void setDrawable(int drawable){
-        this.drawable = drawable;
-    }
 
     public int getDrawable(){
         return drawable;

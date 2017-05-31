@@ -175,9 +175,9 @@ public class Mappa extends AppCompatActivity
                 }if(i==1) {
                     node = new Node(135,470,R.drawable.flame,150); //R2
                 }if(i==2) {
-                    node = new Node(159,456,R.drawable.beacon,155); //ACQ
+                    node = new Node(156,452,R.drawable.beacon,155); //ACQ
                 }if(i==3) {
-                    node = new Node(160,445,R.drawable.beacon,155); //UP
+                    node = new Node(154,454,R.drawable.exit,155); //UP
                 }if(i==4) {
                     node = new Node(110,465,R.drawable.user,150); //G1G2
                 }if(i==5) {
@@ -187,9 +187,9 @@ public class Mappa extends AppCompatActivity
                 }if(i==7) {
                     node = new Node(133,480,R.drawable.flame,145); //RG2
                 }if(i==8) {
-                    node = new Node(133,467,R.drawable.target,155); //WC1
+                    node = new Node(100,454,R.drawable.target,155); //WC1
                 }if(i==9) {
-                    node = new Node(149,472,R.drawable.beacon,155); //WC2
+                    node = new Node(149,472,R.drawable.beacon,150); //WC2
                 }
                 list.add(i,node);
             }
@@ -198,23 +198,42 @@ public class Mappa extends AppCompatActivity
             mapViewController.clearFloor(155);
             mapViewController.addNodes(list);
             mapViewController.changeFloor(150);
-            //customMapView.setImage(ImageSource.resource(R.drawable.floor150));
+        } else if (id == R.id.test2) {
+            list = new ArrayList<>();
+            for(int i=0;i<10;i++){
+                if(i==0) {
+                    node = new Node(150,500,R.drawable.beacon,155); //EMRL
+                }if(i==1) {
+                    node = new Node(135,470,R.drawable.flame,155); //R2
+                }if(i==2) {
+                    node = new Node(159,456,R.drawable.beacon,155); //ACQ
+                }if(i==3) {
+                    node = new Node(160,445,R.drawable.beacon,155); //UP
+                }if(i==4) {
+                    node = new Node(110,465,R.drawable.user,155); //G1G2
+                }if(i==5) {
+                    node = new Node(92,484,R.drawable.target,155); //A5
+                }if(i==6) {
+                    node = new Node(90,480,R.drawable.user,155); //RG1
+                }if(i==7) {
+                    node = new Node(133,480,R.drawable.flame,155); //RG2
+                }if(i==8) {
+                    node = new Node(133,467,R.drawable.target,155); //WC1
+                }if(i==9) {
+                    node = new Node(149,472,R.drawable.beacon,155); //WC2
+                }
+                list.add(i,node);
+            }
+            mapViewController.clearFloor(155);
+            mapViewController.addNodes(list);
+            mapViewController.changeFloor(155);
         } else if (id == R.id.piano145){
             mapViewController.changeFloor(145);
-            //list = new ArrayList<>();
-            //customMapView.setImage(ImageSource.resource(R.drawable.floor145));
         } else if (id == R.id.piano150){
             mapViewController.changeFloor(150);
-            //list = new ArrayList<>();
-            //customMapView.setImage(ImageSource.resource(R.drawable.floor150));
         } else if (id == R.id.piano155){
             mapViewController.changeFloor(155);
-            //list = new ArrayList<>();
-            //customMapView.setImage(ImageSource.resource(R.drawable.floor155));
         }
-
-
-        //customMapView.setRoute(list);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
