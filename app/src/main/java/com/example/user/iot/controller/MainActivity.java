@@ -16,6 +16,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -32,12 +33,13 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     Button accedi,registrati;
+    EditText editUser,editPass;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
     public static Context context;
     //Shared preferences
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    SharedPreferences.Editor editor;
+    public SharedPreferences prefs;
+    public SharedPreferences.Editor editor;
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         context = this.getBaseContext();
+        prefs= PreferenceManager.getDefaultSharedPreferences(this);
         //richiesta
         if(!prefs.getBoolean("firstTime", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
@@ -76,12 +79,14 @@ public class MainActivity extends AppCompatActivity {
 
         accedi = (Button) findViewById(R.id.Accedi);
         registrati = (Button) findViewById(R.id.Registrati);
+        editUser =  (EditText) findViewById(R.id.txtUser);
+        editPass = (EditText) findViewById(R.id.txtPass);
 
         registrati.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent registrazione = new Intent(getApplicationContext(),Registrazione.class);
-                startActivity(registrazione);
+                    Intent registrazione = new Intent(getApplicationContext(), Registrazione.class);
+                    startActivity(registrazione);
 
             }
         });
