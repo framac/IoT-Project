@@ -1,0 +1,11 @@
+{
+  "scanDuration" : "4000",
+  "timeBetweenScanNormalMode" : "600000",
+  "timeBetweenScanAlertMode" : "10000",
+  "temperatureThreshold" : "60",
+  "lightThreshold" : "0",
+  "xAccThreshold" : "1.5",
+  "yAccThreshold" : "1.5",
+  "zAccThreshold" : "1.5",
+  "batteryThreshold" : "20"
+}

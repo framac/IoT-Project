@@ -241,27 +241,67 @@ public class Mappa extends AppCompatActivity
     }
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onReceive(Context context, Intent intent) {
 
             if (intent.getAction().equals("DeviceParameters")){
-                String macAddress = intent.getExtras().getString("macAddress");
+                //Qua ricevi il macAddres del beacon più vicino, quindi devi usare questo valore
+                //per mostare la tua posizione sulla mappa. Ti arriverà questo valore ogni volta
+                // che l'app si connette con un beacon
+
+                //Sempre qua riceverai la posizione quando si cliccherà sul tasto ricerca posizione
+                // (che è da aggiungere alla tua view, dove preferisci, Come richiesto all'ultima revisione)
+                //nell'actionListener sul tasto devi aggiungere queste linee di codice per ottenere la posizione:
+
+                //Intent resIntent = new Intent("ricercaPosizione");
+                //LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+
+                String macAddress = intent.getExtras().getString("macadress");
                 double distance = intent.getExtras().getDouble("distance");
-                System.out.print(distance);
             }
             else if (intent.getAction().equals("BatteryService")) {
+                //Per ora lasciar così!;
                 int batteryLevel = intent.getExtras().getInt("batteryLevel");
-                System.out.print(batteryLevel);
-            } else if (intent.getAction().equals("TemperatureService")) {
-                double temperatureLevel = intent.getExtras().getDouble("temperatureLevel");
-                System.out.print(temperatureLevel);
-            } else if (intent.getAction().equals("AccelerometerService")) {
-                double accelerometerX = intent.getExtras().getDouble("accelerometerX");
-                double accelerometerY = intent.getExtras().getDouble("accelerometerY");
-                double accelerometerZ = intent.getExtras().getDouble("accelerometerZ");
-            } else if (intent.getAction().equals("LightService")) {
-                double light = intent.getExtras().getDouble("lightLevel");
-                System.out.print(light);
+                String macAddress = intent.getExtras().getString("dove");
+            } else if (intent.getAction().equals("Incendio")) {
+                //Se sei qui è perchè è stato rilevato un incendio da un beacon quindi devi usare
+                //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
+                //tale posizione un incendio
+                String macAddress = intent.getExtras().getString("dove");
+                System.out.print("ciao");
+                System.out.print(macAddress);
+
+            } else if (intent.getAction().equals("Incendio1")) {
+                //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un incendio
+                // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato l'incendio
+                //e visualizzarlo sulla mappa
+                String nodo = intent.getExtras().getString("dove");
+
+            } else if (intent.getAction().equals("Illuminazione")) {
+                //Se sei qui è perchè è stato rilevato un problema di illuminazione da un beacon quindi devi usare
+                //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
+                //tale posizione un problema di illuminazione
+                String macAddress = intent.getExtras().getString("dove");
+                System.out.print("ciao");
+                System.out.print(macAddress);
+
+            } else if (intent.getAction().equals("Illuminazione1")) {
+                //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un problema di illuminazione
+                // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato il problema
+                //e visualizzarlo sulla mappa
+                String nodo = intent.getExtras().getString("dove");
+
+            } else if (intent.getAction().equals("Terremoto")) {
+                //Se sei qui è perchè è stato rilevato un terremoto da un beacon. Io ti passo il macAdress
+                // ma visto che il terremoto riguarda tutto l'edificio gestisci come credi meglio l'ermergenza, nel
+                //senso che non ce bisogno che fai vedere il pericolo in un punto particolare. Fai come credi meglio
+                String macAddress = intent.getExtras().getString("dove");
+
+            } else if (intent.getAction().equals("Terremoto1")) {
+                //Se sei qui è perchè è stato Inviato manualmente un alert per un terremoto. Qua non ho
+                //nessun parametro da darti quindi gestisci come sopra e come credi meglio
+                System.out.print("ciao");
             }
         }
     };
@@ -270,9 +310,15 @@ public class Mappa extends AppCompatActivity
         final IntentFilter fi = new IntentFilter();
         fi.addAction("DeviceParameters");
         fi.addAction("BatteryService");
-        fi.addAction("TemperatureService");
-        fi.addAction("AccelerometerService");
-        fi.addAction("LightService");
+        fi.addAction("Incendio");
+        fi.addAction("Incendio1");
+        fi.addAction("Illuminazione");
+        fi.addAction("Illuminazione1");
+        fi.addAction("Terremoto");
+        fi.addAction("Terremoto1");
         return fi;
     }
+
+
+
 }

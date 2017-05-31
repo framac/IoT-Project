@@ -8,8 +8,10 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -19,8 +21,13 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.example.user.iot.model.BluetoothLeGatt;
+import com.example.user.iot.utility.Json;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,23 +36,32 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class GestioneConnessioneBA extends Service {
 
-    BluetoothManager btManager;
-    BluetoothAdapter btAdapter;
-    BluetoothLeScanner btScanner;
-    BluetoothDevice device;
+    private BluetoothManager btManager;
+    private BluetoothAdapter btAdapter;
+    private BluetoothLeScanner btScanner;
+    private BluetoothDevice device;
 
-    HashMap<BluetoothDevice, Integer> bluetoothDevices = new HashMap<BluetoothDevice, Integer>();
+    private int scanDuration;
+    private int timeBetweenScanNormalMode;
+    private int timeBetweenScanAlertMode;
 
-    boolean scan = false;
+    private HashMap<BluetoothDevice, Integer> bluetoothDevices = new HashMap<BluetoothDevice, Integer>();
 
-    DecimalFormat df = new DecimalFormat("###.##");
+    private boolean scan = false;
+    private boolean alert = false;
 
-    Handler handler = new Handler();
+    private DecimalFormat df = new DecimalFormat("###.##");
+
+    public static ArrayList<JSONObject> lettureNonSalvate = new ArrayList<>();
+
+    private Handler handler = new Handler();
     // Define the code block to be executed
     private Runnable runnableCode = new Runnable() {
         @Override
@@ -68,10 +84,25 @@ public class GestioneConnessioneBA extends Service {
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
         btScanner = btAdapter.getBluetoothLeScanner();
+        try {
+            JSONObject json = new JSONObject(Json.loadJSONFromAsset());
+            scanDuration = json.getInt("scanDuration");
+            timeBetweenScanNormalMode = json.getInt("timeBetweenScanNormalMode");
+            timeBetweenScanAlertMode = json.getInt("timeBetweenScanAlertMode");
 
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         startScanning();
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,  new IntentFilter("alert"));
 
         return START_NOT_STICKY;
+    }
+
+    @Override
+    public void onDestroy(){
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onDestroy();
     }
 
     private ScanCallback leScanCallback = new ScanCallback() {
@@ -94,7 +125,8 @@ public class GestioneConnessioneBA extends Service {
                 btScanner.startScan(leScanCallback);
             }
         });
-        handler.postDelayed(runnableCode, 5000);
+
+        handler.postDelayed(runnableCode, scanDuration);
     }
 
     public void stopScanning() {
@@ -118,8 +150,38 @@ public class GestioneConnessioneBA extends Service {
             break;
 
         }
-        // TODO PORTARE RUNNABLECODE A 10000
-        handler.postDelayed(runnableCode, 300000);
+        if(alert){
+            handler.postDelayed(runnableCode, timeBetweenScanAlertMode);
+        } else{
+            handler.postDelayed(runnableCode, timeBetweenScanNormalMode);
+        }
+    }
+
+    public void ricercaPosizione(){
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                btScanner.startScan(leScanCallback);
+            }
+        });
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // this code will be executed after 4 seconds
+                btScanner.stopScan(leScanCallback);
+
+                Map<BluetoothDevice, Integer> sortedMap = sortByValue(bluetoothDevices);
+                bluetoothDevices.clear();
+
+                Set<BluetoothDevice> listaDevices = sortedMap.keySet();
+                for (BluetoothDevice device : listaDevices) {
+                    double distance = getDistance(sortedMap.get(device));
+                    broadcastUpdate(device.getAddress(), distance);
+                    break;
+                }
+            }
+        }, 4000);
     }
 
     private static Map<BluetoothDevice, Integer> sortByValue(Map<BluetoothDevice, Integer> unsortMap) {
@@ -149,7 +211,6 @@ public class GestioneConnessioneBA extends Service {
     public void connectToDevice(BluetoothDevice device) {
 
         startService(new Intent(this, BluetoothLeGatt.class).putExtra("device", device));
-
     }
 
     public double getDistance(int rssi) {
@@ -174,5 +235,18 @@ public class GestioneConnessioneBA extends Service {
         resIntent.putExtra("distance", distance);
         LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
     }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().equals("alert")){
+                alert=true;
+                startScanning();
+            } else if(intent.getAction().equals("ricercaPosizone")){
+                ricercaPosizione();
+            }
+        }
+    };
 }
 
