@@ -14,10 +14,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //richiesta posizioni dei beacon
-        if(!prefBeacon.getBoolean("firstTime", false)) {
+        if(!prefBeacon.getBoolean("secondTime", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
             mRequestQueue.add(request);
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onErrorResponse(VolleyError err)
            {
-                    Toast.makeText(MainActivity.context, "Errore di rete. Non è stato possibile accedere al server", Toast.LENGTH_SHORT).show();
+                    Log.d(MainActivity.context.getResources().getString(R.string.serverError), "Errore di rete. Non è stato possibile accedere al server");
            }
     };
 
@@ -178,10 +178,10 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("username",ris);
                     editor.commit();
                     MyFirebaseInstanceIDService.sendRegistrationToServer(ris);
-                    Toast.makeText(MainActivity.context, "Username casuale memorizzato", Toast.LENGTH_SHORT).show();
+                    Log.d(MainActivity.context.getResources().getString(R.string.username), "Username casuale memorizzato");
                 }
                 else{
-                    Toast.makeText(MainActivity.context, "Non è stato generato lo username", Toast.LENGTH_SHORT).show();
+                    Log.d(MainActivity.context.getResources().getString(R.string.username), "Non è stato generato lo username");
                 }
 
             } catch (JSONException e) {
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= 19) {
                 // run your one time code
                 editorBeacon = prefBeacon.edit();
-                editorBeacon.putBoolean("firstTime", true);
+                editorBeacon.putBoolean("secondTime", true);
                 editorBeacon.commit();
                 datasource.createBeacon(response);
             }
