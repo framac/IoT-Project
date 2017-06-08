@@ -19,13 +19,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
+import com.example.user.iot.model.BeaconDataSource;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,6 +44,11 @@ public class MainActivity extends AppCompatActivity {
     //Shared preferences
     public SharedPreferences prefs;
     public SharedPreferences.Editor editor;
+
+    public BeaconDataSource datasource;
+    public SharedPreferences prefBeacon;
+    public SharedPreferences.Editor editorBeacon;
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +57,26 @@ public class MainActivity extends AppCompatActivity {
 
         context = this.getBaseContext();
         prefs= PreferenceManager.getDefaultSharedPreferences(this);
+
+        datasource = new BeaconDataSource(this);
+        datasource.open();
+        prefBeacon=PreferenceManager.getDefaultSharedPreferences(this);
+
         //richiesta
         if(!prefs.getBoolean("firstTime", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.saveNewUser), null, postListener, errorListener);
             mRequestQueue.add(request);
         }
+
+
+        //richiesta posizioni dei beacon
+        if(!prefBeacon.getBoolean("firstTime", false)) {
+            RequestQueue mRequestQueue= Volley.newRequestQueue(this);
+            JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
+            mRequestQueue.add(request);
+        }
+
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
 
@@ -166,5 +189,34 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+
+    @Override
+    protected void onResume() {
+        datasource.open();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        datasource.close();
+        super.onPause();
+    }
+
+
+    private Response.Listener<JSONArray> postListenerJsonArray= new Response.Listener<JSONArray>(){
+        @Override
+        public void onResponse(JSONArray response) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                // run your one time code
+                editorBeacon = prefBeacon.edit();
+                editorBeacon.putBoolean("firstTime", true);
+                editorBeacon.commit();
+                datasource.createBeacon(response);
+            }
+
+        }
+    };
+
 }
 
