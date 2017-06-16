@@ -58,9 +58,9 @@ public class MapViewController {
         building.setOnTouchListener(listener);
     }
 
-    public void addNodes(ArrayList<Node> list){ //aggiunge nodi ad uno o più piani contemporaneamente a seconda di quello che si trova nell'array passato
+    public void addNodes(ArrayList<Node> list){ //aggiunge nodi ad uno o più piani contemporaneamente
         for (int i = 0; i < list.size(); i++) { //attenzione a non aggiungere nodi duplicati
-            node = list.get(i);
+            node = list.get(i);                 //utile per caricare i tutti i beacon e le uscite all'inizio
             PointF point = coordConverter(node.getPoint(),node.getFloor());
             list.get(i).setPoint(point);
             switch(node.getFloor()) {
@@ -116,7 +116,7 @@ public class MapViewController {
         }
     }
 
-    public void clearFloor(int floor){ //svuota l'array di nodi del piano scelto, utile per inizializzare un piano e/o evitare nodi duplicati
+    public void clearFloor(int floor){ //svuota l'array di nodi del piano scelto resettandolo
         ArrayList<Node> list = new ArrayList<Node>();
         switch(floor) {
             case 145: floor_145 = list;

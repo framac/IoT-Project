@@ -21,6 +21,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,9 +29,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
 import com.example.user.iot.model.CustomMapView;
 import com.example.user.iot.model.Node;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -69,15 +78,14 @@ public class Mappa extends AppCompatActivity
             public void onLongPress(MotionEvent e) {
                 if (mapViewController.isMapReady()) {
                     PointF sCoord = mapViewController.sourceImgCoord(e.getX(), e.getY());
-                    text.setText(sCoord.toString());
                     list = mapViewController.getCurrentList();
                     if(list != null) {
                         for (int i = 0; i < list.size(); i++) {
                             node = list.get(i);
-                            if(node.isNear(sCoord)){
+                            if(node.isNear(sCoord) && node.getMacAdress()!= null){
                                 AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
-                                builder.setTitle("Node selezionato");
-                                builder.setMessage(node.getPoint().toString() );
+                                builder.setTitle("Beacon selezionato");
+                                builder.setMessage(node.getMacAdress() + "" + node.getTemp());
                                 builder.setPositiveButton(android.R.string.ok, null);
                                 builder.show();
                             }
@@ -94,7 +102,6 @@ public class Mappa extends AppCompatActivity
                 return gestureDetector.onTouchEvent(motionEvent);
             }
         });
-
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
 
@@ -179,7 +186,7 @@ public class Mappa extends AppCompatActivity
                 }if(i==3) {
                     node = new Node(154,454,R.drawable.exit,155); //UP
                 }if(i==4) {
-                    node = new Node(110,465,R.drawable.user,150); //G1G2
+                    node = new Node(110,465,R.drawable.light,150); //G1G2
                 }if(i==5) {
                     node = new Node(92,484,R.drawable.target,150); //A5
                 }if(i==6) {
@@ -227,12 +234,25 @@ public class Mappa extends AppCompatActivity
             mapViewController.clearFloor(155);
             mapViewController.addNodes(list);
             mapViewController.changeFloor(155);
+        } else if(id == R.id.test3){
+            getLastData("24:71:89:E7:13:87");
+            text.setText("Emergenza in corso, segui le indicazioni a schermo");
+            text.setVisibility(View.VISIBLE);
+        } else if(id == R.id.reset){
+            mapViewController.clearFloor(145);
+            mapViewController.clearFloor(150);
+            mapViewController.clearFloor(155);
+            mapViewController.changeFloor(145);
+            text.setVisibility(View.INVISIBLE);
         } else if (id == R.id.piano145){
             mapViewController.changeFloor(145);
         } else if (id == R.id.piano150){
             mapViewController.changeFloor(150);
         } else if (id == R.id.piano155){
             mapViewController.changeFloor(155);
+        } else if (id == R.id.ricerca){
+            Intent resIntent = new Intent("ricercaPosizione");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -319,6 +339,43 @@ public class Mappa extends AppCompatActivity
         return fi;
     }
 
+    private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
+    {
+        @Override
+        public void onResponse(JSONObject response) {
 
+            try {
+                String ris=response.getString("macAdd");
+                if(ris.equals("24:71:89:E7:13:87")) {
+                    Log.d(getString(R.string.datiAmbientali), "Dati ricevuti");
+                    list = new ArrayList<>();
+                    //node = new Node(110,465,R.drawable.user,155); //G1G2
+                    node = new Node(110,465,R.drawable.beacon,145,response.getString("macAdd"),response.getString("batteria"),response.getString("temperatura"));
+                    list.add(node);
+                    mapViewController.addNodes(list);
+                    mapViewController.changeFloor(145);
+                } else{
+                    Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
+                }
 
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private Response.ErrorListener errorListener=new Response.ErrorListener()
+    {
+        @Override
+        public void onErrorResponse(VolleyError err)
+        {
+            Log.d(getString(R.string.datiAmbientali), "Erorre di rete: " +err.getMessage());
+        }
+    };
+
+    private void getLastData(String macAddress){
+        RequestQueue mRequestQueue= Volley.newRequestQueue(this);
+        JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.getDatiAmb)+macAddress, null, postListener, errorListener);
+        mRequestQueue.add(request);
+    }
 }
