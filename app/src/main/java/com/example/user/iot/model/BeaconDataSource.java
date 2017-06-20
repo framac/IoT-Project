@@ -13,10 +13,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by user on 08/06/2017.
- */
-
 public class BeaconDataSource {
 
     // Database fields
@@ -60,6 +56,21 @@ public class BeaconDataSource {
             e.printStackTrace();
         }
 
+    }
+
+    public Node getBeacon(String mac){
+        Node node = null;
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_BEACON,
+                allColumns, "macaddress = ?", new String[]{mac}, null, null, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+
+            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),null);
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return node;
     }
 
     public List<String> getAllBeacon() {

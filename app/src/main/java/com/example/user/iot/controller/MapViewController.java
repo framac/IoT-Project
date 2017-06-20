@@ -58,9 +58,10 @@ public class MapViewController {
         building.setOnTouchListener(listener);
     }
 
+    //TODO: ci vorrebbe un metodo che verifichi che il nodo che sto per inserire non sia gia presente,se è presente sostituirlo
     public void addNodes(ArrayList<Node> list){ //aggiunge nodi ad uno o più piani contemporaneamente
-        for (int i = 0; i < list.size(); i++) { //attenzione a non aggiungere nodi duplicati
-            node = list.get(i);                 //utile per caricare i tutti i beacon e le uscite all'inizio
+        for (int i = 0; i < list.size(); i++) { //utile per caricare i tutti i beacon e le uscite all'inizio
+            node = list.get(i);
             PointF point = coordConverter(node.getPoint(),node.getFloor());
             list.get(i).setPoint(point);
             switch(node.getFloor()) {

@@ -35,6 +35,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
+import com.example.user.iot.model.BeaconDataSource;
 import com.example.user.iot.model.CustomMapView;
 import com.example.user.iot.model.Node;
 
@@ -42,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Mappa extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -51,11 +53,12 @@ public class Mappa extends AppCompatActivity
     private CustomMapView customMapView;
     private MapViewController mapViewController;
     private GestureDetector gestureDetector;
+    private BeaconDataSource datasource;
     boolean service = false;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) { //TODO:caricare tutti i beacon e le uscite
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mappa);
 
@@ -70,9 +73,14 @@ public class Mappa extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        datasource = new BeaconDataSource(this);
+        datasource.open();
+
         text = (TextView) findViewById(R.id.textView);
         customMapView = (CustomMapView) findViewById(R.id.map);
         mapViewController = new MapViewController(customMapView);
+
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
@@ -82,10 +90,17 @@ public class Mappa extends AppCompatActivity
                     if(list != null) {
                         for (int i = 0; i < list.size(); i++) {
                             node = list.get(i);
-                            if(node.isNear(sCoord) && node.getMacAdress()!= null){
+                            List<String> dati = node.getDatiBeacon();
+                            if(node.isNear(sCoord) && dati!= null){
                                 AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
-                                builder.setTitle("Beacon selezionato");
-                                builder.setMessage(node.getMacAdress() + "" + node.getTemp());
+                                builder.setTitle("Valori Beacon");
+                                builder.setMessage("Mac: " + dati.get(0) + "\n" +
+                                                   "Batteria: " + dati.get(1) + "\n" +
+                                                   "Temperatura: " + dati.get(2) + "\n" +
+                                                   "AccelX: " + dati.get(3) + "\n" +
+                                                   "AccelY: " + dati.get(4) + "\n" +
+                                                   "AccelZ: " + dati.get(5) + "\n" +
+                                                   "Luminosità: " + dati.get(6));
                                 builder.setPositiveButton(android.R.string.ok, null);
                                 builder.show();
                             }
@@ -102,6 +117,7 @@ public class Mappa extends AppCompatActivity
                 return gestureDetector.onTouchEvent(motionEvent);
             }
         });
+
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
 
@@ -125,6 +141,18 @@ public class Mappa extends AppCompatActivity
             builder.show();
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        datasource.open();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        datasource.close();
+        super.onPause();
     }
 
     @Override
@@ -174,67 +202,18 @@ public class Mappa extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.test1) {
+        if (id == R.id.test1) { //test db
             list = new ArrayList<>();
-            for(int i=0;i<10;i++){
-                if(i==0) {
-                    node = new Node(150,500,R.drawable.beacon,150); //EMRL
-                }if(i==1) {
-                    node = new Node(135,470,R.drawable.flame,150); //R2
-                }if(i==2) {
-                    node = new Node(156,452,R.drawable.beacon,155); //ACQ
-                }if(i==3) {
-                    node = new Node(154,454,R.drawable.exit,155); //UP
-                }if(i==4) {
-                    node = new Node(110,465,R.drawable.light,150); //G1G2
-                }if(i==5) {
-                    node = new Node(92,484,R.drawable.target,150); //A5
-                }if(i==6) {
-                    node = new Node(90,480,R.drawable.user,145); //RG1
-                }if(i==7) {
-                    node = new Node(133,480,R.drawable.flame,145); //RG2
-                }if(i==8) {
-                    node = new Node(100,454,R.drawable.target,155); //WC1
-                }if(i==9) {
-                    node = new Node(149,472,R.drawable.beacon,150); //WC2
-                }
-                list.add(i,node);
-            }
+            list.add(datasource.getBeacon("24:71:89:E7:13:87"));
             mapViewController.clearFloor(145);
             mapViewController.clearFloor(150);
             mapViewController.clearFloor(155);
             mapViewController.addNodes(list);
             mapViewController.changeFloor(150);
-        } else if (id == R.id.test2) {
-            list = new ArrayList<>();
-            for(int i=0;i<10;i++){
-                if(i==0) {
-                    node = new Node(150,500,R.drawable.beacon,155); //EMRL
-                }if(i==1) {
-                    node = new Node(135,470,R.drawable.flame,155); //R2
-                }if(i==2) {
-                    node = new Node(159,456,R.drawable.beacon,155); //ACQ
-                }if(i==3) {
-                    node = new Node(160,445,R.drawable.beacon,155); //UP
-                }if(i==4) {
-                    node = new Node(110,465,R.drawable.user,155); //G1G2
-                }if(i==5) {
-                    node = new Node(92,484,R.drawable.target,155); //A5
-                }if(i==6) {
-                    node = new Node(90,480,R.drawable.user,155); //RG1
-                }if(i==7) {
-                    node = new Node(133,480,R.drawable.flame,155); //RG2
-                }if(i==8) {
-                    node = new Node(133,467,R.drawable.target,155); //WC1
-                }if(i==9) {
-                    node = new Node(149,472,R.drawable.beacon,155); //WC2
-                }
-                list.add(i,node);
-            }
-            mapViewController.clearFloor(155);
-            mapViewController.addNodes(list);
-            mapViewController.changeFloor(155);
-        } else if(id == R.id.test3){
+        } else if (id == R.id.test2) { //stress test
+
+        } else if(id == R.id.test3){ //test server e messaggio
+            node = new Node(110,465,"Beacon",145);
             getLastData("24:71:89:E7:13:87");
             text.setText("Emergenza in corso, segui le indicazioni a schermo");
             text.setVisibility(View.VISIBLE);
@@ -279,6 +258,14 @@ public class Mappa extends AppCompatActivity
 
                 String macAddress = intent.getExtras().getString("macadress");
                 double distance = intent.getExtras().getDouble("distance");
+                list = new ArrayList<>();
+                Node beacon = datasource.getBeacon(macAddress);
+                Node utente = new Node((beacon.getPoint().x)-(float) distance,(beacon.getPoint().y)-(float) distance,
+                                        R.drawable.user,beacon.getFloor());
+
+                list.add(utente);
+                mapViewController.addNodes(list);
+                mapViewController.changeFloor(beacon.getFloor());
             }
             else if (intent.getAction().equals("BatteryService")) {
                 //Per ora lasciar così!;
@@ -289,8 +276,9 @@ public class Mappa extends AppCompatActivity
                 //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
                 //tale posizione un incendio
                 String macAddress = intent.getExtras().getString("dove");
-                System.out.print("ciao");
-                System.out.print(macAddress);
+                node = datasource.getBeacon(macAddress);
+                node.setDrawable("Emergenza");
+                getLastData(macAddress);
 
             } else if (intent.getAction().equals("Incendio1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un incendio
@@ -303,8 +291,9 @@ public class Mappa extends AppCompatActivity
                 //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
                 //tale posizione un problema di illuminazione
                 String macAddress = intent.getExtras().getString("dove");
-                System.out.print("ciao");
-                System.out.print(macAddress);
+                node = datasource.getBeacon(macAddress);
+                node.setDrawable("Illuminazione");
+                getLastData(macAddress);
 
             } else if (intent.getAction().equals("Illuminazione1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un problema di illuminazione
@@ -316,12 +305,15 @@ public class Mappa extends AppCompatActivity
                 //Se sei qui è perchè è stato rilevato un terremoto da un beacon. Io ti passo il macAdress
                 // ma visto che il terremoto riguarda tutto l'edificio gestisci come credi meglio l'ermergenza, nel
                 //senso che non ce bisogno che fai vedere il pericolo in un punto particolare. Fai come credi meglio
-                String macAddress = intent.getExtras().getString("dove");
+                //String macAddress = intent.getExtras().getString("dove");
+                text.setText("Allarme Terremoto, segui le indicazioni a schermo");
+                text.setVisibility(View.VISIBLE);
 
             } else if (intent.getAction().equals("Terremoto1")) {
                 //Se sei qui è perchè è stato Inviato manualmente un alert per un terremoto. Qua non ho
                 //nessun parametro da darti quindi gestisci come sopra e come credi meglio
-                System.out.print("ciao");
+                text.setText("Allarme Terremoto, segui le indicazioni a schermo");
+                text.setVisibility(View.VISIBLE);
             }
         }
     };
@@ -338,22 +330,28 @@ public class Mappa extends AppCompatActivity
         fi.addAction("Terremoto1");
         return fi;
     }
-
+    //TODO: decidere cosa fare se non si riesce a prendere i dati dal server
     private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
     {
         @Override
         public void onResponse(JSONObject response) {
 
             try {
-                String ris=response.getString("macAdd");
-                if(ris.equals("24:71:89:E7:13:87")) {
+                if(response != null) {
                     Log.d(getString(R.string.datiAmbientali), "Dati ricevuti");
+                    List<String> datiAmbientali = new ArrayList<>();
                     list = new ArrayList<>();
-                    //node = new Node(110,465,R.drawable.user,155); //G1G2
-                    node = new Node(110,465,R.drawable.beacon,145,response.getString("macAdd"),response.getString("batteria"),response.getString("temperatura"));
+                    datiAmbientali.add(response.getString("macAdd"));
+                    datiAmbientali.add(response.getString("batteria"));
+                    datiAmbientali.add(response.getString("temperatura"));
+                    datiAmbientali.add(response.getString("xAcc"));
+                    datiAmbientali.add(response.getString("yAcc"));
+                    datiAmbientali.add(response.getString("zAcc"));
+                    datiAmbientali.add(response.getString("lux"));
+                    node.setBeacon(datiAmbientali);
                     list.add(node);
                     mapViewController.addNodes(list);
-                    mapViewController.changeFloor(145);
+                    mapViewController.changeFloor(node.getFloor());
                 } else{
                     Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
                 }
