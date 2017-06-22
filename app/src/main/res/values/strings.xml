@@ -46,9 +46,9 @@
     <string name="username"> Username </string>
 
     <!-- Server -->
-    <string name="saveDatiAmb">http://10.0.0.10:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
-    <string name="saveToken">http://10.0.0.10:8080/IotServer/utenti/saveToken</string>
-    <string name="saveNewUser">http://10.0.0.10:8080/IotServer/utenti/getNewUsername</string>
+    <string name="saveDatiAmb">http://hostiot.ddns.net:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
+    <string name="saveToken">http://hostiot.ddns.net:8080/IotServer/utenti/saveToken</string>
+    <string name="saveNewUser">http://hostiot.ddns.net:8080/IotServer/utenti/getNewUsername</string>
     <string name="getBeacon">http://hostiot.ddns.net:8080/IotServer/beacons</string>
     <string name="getDatiAmb">http://hostiot.ddns.net:8080/IotServer/datiAmbientali/getLastData/</string>
 
