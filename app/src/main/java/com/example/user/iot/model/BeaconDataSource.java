@@ -60,12 +60,18 @@ public class BeaconDataSource {
 
     public Node getBeacon(String mac){
         Node node = null;
+        List<String> dati = new ArrayList<>();
+        dati.add(mac);
+        for(int i=0; i<6; i++){
+            dati.add("Non disponibile");
+        }
         Cursor cursor = database.query(MySQLiteHelper.TABLE_BEACON,
                 allColumns, "macaddress = ?", new String[]{mac}, null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
 
-            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),null);
+            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),dati);
+            node.setId(cursor.getString(2));
             cursor.moveToNext();
         }
         // make sure to close the cursor

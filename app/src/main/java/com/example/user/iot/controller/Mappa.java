@@ -2,6 +2,8 @@ package com.example.user.iot.controller;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -54,7 +57,8 @@ public class Mappa extends AppCompatActivity
     private MapViewController mapViewController;
     private GestureDetector gestureDetector;
     private BeaconDataSource datasource;
-    boolean service = false;
+    private int resume = 145;
+    boolean service = false,active = true;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -73,6 +77,10 @@ public class Mappa extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        Intent notificationIntent = new Intent(this, Mappa.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        mBuilder.setContentIntent(pendingIntent);
 
         datasource = new BeaconDataSource(this);
         datasource.open();
@@ -93,7 +101,7 @@ public class Mappa extends AppCompatActivity
                             List<String> dati = node.getDatiBeacon();
                             if(node.isNear(sCoord) && dati!= null){
                                 AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
-                                builder.setTitle("Valori Beacon");
+                                builder.setTitle("Beacon "+node.getId());
                                 builder.setMessage("Mac: " + dati.get(0) + "\n" +
                                                    "Batteria: " + dati.get(1) + "\n" +
                                                    "Temperatura: " + dati.get(2) + "\n" +
@@ -145,12 +153,15 @@ public class Mappa extends AppCompatActivity
 
     @Override
     protected void onResume() {
+        active = true;
+        mapViewController.changeFloor(resume);
         datasource.open();
         super.onResume();
     }
 
     @Override
     protected void onPause() {
+        active = false;
         datasource.close();
         super.onPause();
     }
@@ -203,17 +214,17 @@ public class Mappa extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.test1) { //test db
-            list = new ArrayList<>();
-            list.add(datasource.getBeacon("24:71:89:E7:13:87"));
-            mapViewController.clearFloor(145);
-            mapViewController.clearFloor(150);
-            mapViewController.clearFloor(155);
-            mapViewController.addNodes(list);
-            mapViewController.changeFloor(150);
-        } else if (id == R.id.test2) { //stress test
-
+            node = datasource.getBeacon("24:71:89:E7:13:87");
+            mapViewController.addNode(node);
+            mapViewController.changeFloor(node.getFloor());
+        } else if (id == R.id.test2) {
+            int mNotificationId = 001;
+            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
         } else if(id == R.id.test3){ //test server e messaggio
-            node = new Node(110,465,"Beacon",145);
+            node = new Node(129,465,"Beacon",150);
+            mapViewController.addNode(node);
+            mapViewController.changeFloor(150);
             getLastData("24:71:89:E7:13:87");
             text.setText("Emergenza in corso, segui le indicazioni a schermo");
             text.setVisibility(View.VISIBLE);
@@ -239,6 +250,14 @@ public class Mappa extends AppCompatActivity
         return true;
     }
 
+    private NotificationCompat.Builder mBuilder =
+            new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.flame)
+                    .setContentTitle("Emergenza in corso")
+                    .setContentText("E' stato rilevato un incendio")
+                    .setAutoCancel(true)
+                    .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
@@ -258,14 +277,12 @@ public class Mappa extends AppCompatActivity
 
                 String macAddress = intent.getExtras().getString("macadress");
                 double distance = intent.getExtras().getDouble("distance");
-                list = new ArrayList<>();
                 Node beacon = datasource.getBeacon(macAddress);
                 Node utente = new Node((beacon.getPoint().x)-(float) distance,(beacon.getPoint().y)-(float) distance,
                                         R.drawable.user,beacon.getFloor());
-
-                list.add(utente);
-                mapViewController.addNodes(list);
-                mapViewController.changeFloor(beacon.getFloor());
+                mapViewController.addNode(utente);
+                if(active){mapViewController.changeFloor(beacon.getFloor());}
+                else if(!active){resume = beacon.getFloor();}
             }
             else if (intent.getAction().equals("BatteryService")) {
                 //Per ora lasciar così!;
@@ -278,13 +295,24 @@ public class Mappa extends AppCompatActivity
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Emergenza");
+                mapViewController.addNode(node);
+                if(active){mapViewController.changeFloor(node.getFloor());}
+                else if(!active){resume = node.getFloor();}
                 getLastData(macAddress);
+                mBuilder.setContentText("E' stato rilevato un incendio");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
 
             } else if (intent.getAction().equals("Incendio1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un incendio
                 // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato l'incendio
                 //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
+                mBuilder.setContentText("E' stato rilevato un incendio");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
 
             } else if (intent.getAction().equals("Illuminazione")) {
                 //Se sei qui è perchè è stato rilevato un problema di illuminazione da un beacon quindi devi usare
@@ -293,13 +321,24 @@ public class Mappa extends AppCompatActivity
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Illuminazione");
+                mapViewController.addNode(node);
+                if(active){mapViewController.changeFloor(node.getFloor());}
+                else if(!active){resume = node.getFloor();}
                 getLastData(macAddress);
+                mBuilder.setContentText("C'è un problema di illuminazione");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
 
             } else if (intent.getAction().equals("Illuminazione1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un problema di illuminazione
                 // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato il problema
                 //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
+                mBuilder.setContentText("C'è un problema di illuminazione");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
 
             } else if (intent.getAction().equals("Terremoto")) {
                 //Se sei qui è perchè è stato rilevato un terremoto da un beacon. Io ti passo il macAdress
@@ -308,12 +347,20 @@ public class Mappa extends AppCompatActivity
                 //String macAddress = intent.getExtras().getString("dove");
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
+                mBuilder.setContentText("E' in corso un terremoto");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
 
             } else if (intent.getAction().equals("Terremoto1")) {
                 //Se sei qui è perchè è stato Inviato manualmente un alert per un terremoto. Qua non ho
                 //nessun parametro da darti quindi gestisci come sopra e come credi meglio
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
+                mBuilder.setContentText("E' in corso un terremoto");
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, mBuilder.build());
             }
         }
     };
@@ -330,7 +377,7 @@ public class Mappa extends AppCompatActivity
         fi.addAction("Terremoto1");
         return fi;
     }
-    //TODO: decidere cosa fare se non si riesce a prendere i dati dal server
+
     private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>()
     {
         @Override
@@ -340,7 +387,6 @@ public class Mappa extends AppCompatActivity
                 if(response != null) {
                     Log.d(getString(R.string.datiAmbientali), "Dati ricevuti");
                     List<String> datiAmbientali = new ArrayList<>();
-                    list = new ArrayList<>();
                     datiAmbientali.add(response.getString("macAdd"));
                     datiAmbientali.add(response.getString("batteria"));
                     datiAmbientali.add(response.getString("temperatura"));
@@ -348,10 +394,11 @@ public class Mappa extends AppCompatActivity
                     datiAmbientali.add(response.getString("yAcc"));
                     datiAmbientali.add(response.getString("zAcc"));
                     datiAmbientali.add(response.getString("lux"));
+                    node = datasource.getBeacon(response.getString("macAdd"));
                     node.setBeacon(datiAmbientali);
-                    list.add(node);
-                    mapViewController.addNodes(list);
-                    mapViewController.changeFloor(node.getFloor());
+                    mapViewController.updateBeacon(node);
+                    if(active){mapViewController.changeFloor(node.getFloor());}
+                    else if(!active){resume = node.getFloor();}
                 } else{
                     Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
                 }

@@ -18,6 +18,7 @@ public class Node {
         this.drawable = drawable;
         this.floor = floor;
         this.beacon = null;
+        this.id = null;
     }
 
     public Node(float x, float y, int drawable, int floor){
@@ -25,6 +26,7 @@ public class Node {
         this.drawable = drawable;
         this.floor = floor;
         this.beacon = null;
+        this.id = null;
     }
 
     public Node(float x, float y, String type, int floor){
@@ -32,6 +34,7 @@ public class Node {
         setDrawable(type);
         this.floor = floor;
         this.beacon = null;
+        this.id = null;
     }
 
     public Node(float x, float y, String type, int floor,List<String> beacon){
@@ -39,6 +42,16 @@ public class Node {
         this.floor = floor;
         setDrawable(type);
         this.beacon = beacon;
+        this.id = null;
+    }
+
+    public boolean isNear(PointF point1){
+        if(point1.x >= (point.x-20) && point1.x <= (point.x+20)){
+            if(point1.y >= (point.y-20) && point1.y <= (point.y+20)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setDrawable(String type){
@@ -60,15 +73,6 @@ public class Node {
         }
     }
 
-    public boolean isNear(PointF point1){
-        if(point1.x >= (point.x-20) && point1.x <= (point.x+20)){
-            if(point1.y >= (point.y-20) && point1.y <= (point.y+20)){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void setPoint(PointF point){this.point = point;}
 
     public void setFloor(int floor){
@@ -76,6 +80,8 @@ public class Node {
     }
 
     public void setBeacon(List<String> beacon){this.beacon = beacon;}
+
+    public void setId(String id){this.id = id;}
 
     public PointF getPoint(){return point;}
 
@@ -88,4 +94,6 @@ public class Node {
     }
 
     public List<String> getDatiBeacon(){ return beacon;}
+
+    public String getId(){ return id;}
 }

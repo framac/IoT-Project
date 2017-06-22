@@ -58,7 +58,68 @@ public class MapViewController {
         building.setOnTouchListener(listener);
     }
 
-    //TODO: ci vorrebbe un metodo che verifichi che il nodo che sto per inserire non sia gia presente,se è presente sostituirlo
+    public void addNode(Node new_node){
+          PointF point = coordConverter(new_node.getPoint(),new_node.getFloor());
+          new_node.setPoint(point);
+          deleteNode(new_node);
+          switch(new_node.getFloor()){
+            case 145: floor_145.add(new_node);
+                break;
+
+            case 150: floor_150.add(new_node);
+                break;
+
+            case 155: floor_155.add(new_node);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void deleteNode(Node delete){
+        ArrayList<Node> list = new ArrayList<>();
+        switch(delete.getFloor()){
+            case 145: list = floor_145;
+                break;
+
+            case 150: list = floor_150;
+                break;
+
+            case 155: list = floor_155;
+                break;
+            default:
+                break;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).getPoint().equals(delete.getPoint())){
+                list.remove(i);
+            }
+        }
+    }
+
+    public void updateBeacon(Node update){
+        ArrayList<Node> list = new ArrayList<>();
+        PointF point = coordConverter(update.getPoint(),update.getFloor());
+        update.setPoint(point);
+        switch(update.getFloor()){
+            case 145: list = floor_145;
+                break;
+
+            case 150: list = floor_150;
+                break;
+
+            case 155: list = floor_155;
+                break;
+            default:
+                break;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).getPoint().equals(update.getPoint())){
+                list.get(i).setBeacon(update.getDatiBeacon());
+            }
+        }
+    }
+
     public void addNodes(ArrayList<Node> list){ //aggiunge nodi ad uno o più piani contemporaneamente
         for (int i = 0; i < list.size(); i++) { //utile per caricare i tutti i beacon e le uscite all'inizio
             node = list.get(i);
