@@ -79,16 +79,24 @@ public class BeaconDataSource {
         return node;
     }
 
-    public List<String> getAllBeacon() {
-        List<String> listBeacon= new ArrayList<String>();
+    public ArrayList<Node> getAllBeacon() {
+        ArrayList<Node> listBeacon= new ArrayList<>();
+        Node node = null;
         String id;
+        List<String> dati = new ArrayList<>();
+        for(int i=0; i<7; i++){
+            dati.add("Non disponibile");
+        }
+
         Cursor cursor = database.query(MySQLiteHelper.TABLE_BEACON,
                 allColumns, null, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            id=String.valueOf(cursor.getLong(0));
-            listBeacon.add("Il beacon "+cursor.getString(1)+" si trova a "+cursor.getString(2)+ " al piano "+cursor.getString(3)+" con coordinate "+String.valueOf(cursor.getLong(4))+String.valueOf(cursor.getLong(5)));
+            dati.set(0,cursor.getString(1));
+            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),dati);
+            node.setId(cursor.getString(2));
+            listBeacon.add(node);
             cursor.moveToNext();
         }
         // make sure to close the cursor

@@ -93,7 +93,7 @@ public class Node {
         return floor;
     }
 
-    public List<String> getDatiBeacon(){ return beacon;}
+    public List<String> getBeacon(){ return beacon;}
 
     public String getId(){ return id;}
 }

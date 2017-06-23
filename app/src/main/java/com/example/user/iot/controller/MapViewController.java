@@ -115,7 +115,7 @@ public class MapViewController {
         }
         for (int i = 0; i < list.size(); i++) {
             if(list.get(i).getPoint().equals(update.getPoint())){
-                list.get(i).setBeacon(update.getDatiBeacon());
+                list.get(i).setBeacon(update.getBeacon());
             }
         }
     }

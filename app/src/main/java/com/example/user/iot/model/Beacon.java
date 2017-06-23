@@ -1,54 +1,51 @@
 package com.example.user.iot.model;
 
-/**
- * Created by user on 08/06/2017.
- */
 
 public class Beacon {
-    public String macaddress;
-    public String posizione;
-    public String piano;
-    public long x;
-    public long y;
+    private String macaddress, posizione;
+    private double temperatureLevel, accelerometerX, accelerometerY, accelerometerZ, lightLevel;
+    private int batteryLevel;
+
+    public Beacon(String macaddress){
+        this.macaddress = macaddress;
+        this.posizione = null;
+    }
 
     public String getMacaddress() {
         return macaddress;
-    }
-
-    public void setMacaddress(String macaddress) {
-        this.macaddress = macaddress;
     }
 
     public String getPosizione() {
         return posizione;
     }
 
-    public void setPosizione(String posizione) {
-        this.posizione = posizione;
+    public double getTemperatureLevel(){ return temperatureLevel;}
+
+    public double getAccelerometerX(){ return accelerometerX;}
+
+    public double getAccelerometerY(){ return accelerometerY;}
+
+    public double getAccelerometerZ(){ return accelerometerZ;}
+
+    public double getLightLevel(){ return lightLevel;}
+
+    public int getBatteryLevel(){ return batteryLevel;}
+
+    public void setMacaddress(String macaddress) {
+        this.macaddress = macaddress;
     }
 
-    public String getPiano() {
-        return piano;
-    }
+    public void setPosizione(String posizione) {this.posizione = posizione;}
 
-    public void setPiano(String piano) {
-        this.piano = piano;
-    }
+    public void setTemperatureLevel(double temperatureLevel){this.temperatureLevel=temperatureLevel;}
 
-    public long getX() {
-        return x;
-    }
+    public void setAccelerometerX(double accelerometerX){this.accelerometerX=accelerometerX;}
 
-    public void setX(long x) {
-        this.x = x;
-    }
+    public void setAccelerometerY(double accelerometerY){this.accelerometerY=accelerometerY;}
 
-    public long getY() {
-        return y;
-    }
+    public void setAccelerometerZ(double accelerometerZ){this.accelerometerZ=accelerometerZ;}
 
-    public void setY(long y) {
-        this.y = y;
-    }
+    public void setLightLevel(double lightLevel){this.lightLevel=lightLevel;}
 
+    public void setBatteryLevel(int batteryLevel){this.batteryLevel=batteryLevel;}
 }
