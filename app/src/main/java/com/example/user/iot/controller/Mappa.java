@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -77,10 +78,6 @@ public class Mappa extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        Intent notificationIntent = new Intent(this, Mappa.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        mBuilder.setContentIntent(pendingIntent);
 
         datasource = new BeaconDataSource(this);
         datasource.open();
@@ -218,9 +215,7 @@ public class Mappa extends AppCompatActivity
             mapViewController.addNode(node);
             mapViewController.changeFloor(node.getFloor());
         } else if (id == R.id.test2) {
-            int mNotificationId = 001;
-            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
         } else if(id == R.id.test3){ //test server e messaggio
             node = new Node(129,465,"Beacon",150);
             mapViewController.addNode(node);
@@ -250,13 +245,6 @@ public class Mappa extends AppCompatActivity
         return true;
     }
 
-    private NotificationCompat.Builder mBuilder =
-            new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.flame)
-                    .setContentTitle("Emergenza in corso")
-                    .setContentText("E' stato rilevato un incendio")
-                    .setAutoCancel(true)
-                    .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -296,26 +284,44 @@ public class Mappa extends AppCompatActivity
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Emergenza");
                 mapViewController.addNode(node);
-                if(active){mapViewController.changeFloor(node.getFloor());}
-                else if(!active){
-                    resume = node.getFloor();
-                    mBuilder.setContentText("E' stato rilevato un incendio");
+                mapViewController.changeFloor(node.getFloor());
+                resume = 200;
+                    NotificationCompat.Builder notBuilder =
+                            new NotificationCompat.Builder(context)
+                                    .setSmallIcon(R.drawable.flame)
+                                    .setContentTitle("Allarme Incendio")
+                                    .setContentText("Segui le istruzioni dell'app")
+                                    .setAutoCancel(true)
+                                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                    .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                    Intent notificationIntent = new Intent(context, Mappa.class);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                    notBuilder.setContentIntent(pendingIntent);
                     int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    mNotifyMgr.notify(mNotificationId, notBuilder.build());
+
                 getLastData(macAddress);
             } else if (intent.getAction().equals("Incendio1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un incendio
                 // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato l'incendio
                 //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
-                mBuilder.setContentText("E' stato rilevato un incendio");
-                if(!active) {
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                NotificationCompat.Builder notBuilder =
+                        new NotificationCompat.Builder(context)
+                                .setSmallIcon(R.drawable.flame)
+                                .setContentTitle("Allarme Incendio")
+                                .setContentText("Segui le istruzioni dell'app")
+                                .setAutoCancel(true)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent notificationIntent = new Intent(context, Mappa.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                notBuilder.setContentIntent(pendingIntent);
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, notBuilder.build());
+
 
             } else if (intent.getAction().equals("Illuminazione")) {
                 //Se sei qui è perchè è stato rilevato un problema di illuminazione da un beacon quindi devi usare
@@ -325,26 +331,41 @@ public class Mappa extends AppCompatActivity
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Illuminazione");
                 mapViewController.addNode(node);
-                if(active){mapViewController.changeFloor(node.getFloor());}
-                else if(!active){
-                    resume = node.getFloor();
-                    mBuilder.setContentText("C'è un problema di illuminazione");
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                mapViewController.changeFloor(node.getFloor());
+                NotificationCompat.Builder notBuilder =
+                        new NotificationCompat.Builder(context)
+                                .setSmallIcon(R.drawable.flame)
+                                .setContentTitle("Problema illuminazione")
+                                .setContentText("Il problema sarà presto risolto")
+                                .setAutoCancel(true)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent notificationIntent = new Intent(context, Mappa.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                notBuilder.setContentIntent(pendingIntent);
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, notBuilder.build());
                 getLastData(macAddress);
             } else if (intent.getAction().equals("Illuminazione1")) {
                 //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un problema di illuminazione
                 // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato il problema
                 //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
-                if(!active) {
-                    mBuilder.setContentText("C'è un problema di illuminazione");
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                NotificationCompat.Builder notBuilder =
+                        new NotificationCompat.Builder(context)
+                                .setSmallIcon(R.drawable.flame)
+                                .setContentTitle("Problema illuminazione")
+                                .setContentText("Il problema sarà presto risolto")
+                                .setAutoCancel(true)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent notificationIntent = new Intent(context, Mappa.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                notBuilder.setContentIntent(pendingIntent);
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, notBuilder.build());
 
             } else if (intent.getAction().equals("Terremoto")) {
                 //Se sei qui è perchè è stato rilevato un terremoto da un beacon. Io ti passo il macAdress
@@ -353,24 +374,40 @@ public class Mappa extends AppCompatActivity
                 //String macAddress = intent.getExtras().getString("dove");
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
-                if(!active) {
-                    mBuilder.setContentText("E' in corso un terremoto");
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                NotificationCompat.Builder notBuilder =
+                        new NotificationCompat.Builder(context)
+                                .setSmallIcon(R.drawable.flame)
+                                .setContentTitle("Allarme Terremoto")
+                                .setContentText("Segui le istruzioni dell'app")
+                                .setAutoCancel(true)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent notificationIntent = new Intent(context, Mappa.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                notBuilder.setContentIntent(pendingIntent);
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, notBuilder.build());
 
             } else if (intent.getAction().equals("Terremoto1")) {
                 //Se sei qui è perchè è stato Inviato manualmente un alert per un terremoto. Qua non ho
                 //nessun parametro da darti quindi gestisci come sopra e come credi meglio
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
-                if(!active) {
-                    mBuilder.setContentText("E' in corso un terremoto");
-                    int mNotificationId = 001;
-                    NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    mNotifyMgr.notify(mNotificationId, mBuilder.build());
-                }
+                NotificationCompat.Builder notBuilder =
+                        new NotificationCompat.Builder(context)
+                                .setSmallIcon(R.drawable.flame)
+                                .setContentTitle("Allarme Terremoto")
+                                .setContentText("Segui le istruzioni dell'app")
+                                .setAutoCancel(true)
+                                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent notificationIntent = new Intent(context, Mappa.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                notBuilder.setContentIntent(pendingIntent);
+                int mNotificationId = 001;
+                NotificationManager mNotifyMgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotifyMgr.notify(mNotificationId, notBuilder.build());
             }
         }
     };
