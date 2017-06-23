@@ -376,7 +376,7 @@ public class Mappa extends AppCompatActivity
                 text.setVisibility(View.VISIBLE);
                 NotificationCompat.Builder notBuilder =
                         new NotificationCompat.Builder(context)
-                                .setSmallIcon(R.drawable.flame)
+                                .setSmallIcon(R.drawable.terremoto)
                                 .setContentTitle("Allarme Terremoto")
                                 .setContentText("Segui le istruzioni dell'app")
                                 .setAutoCancel(true)
@@ -396,7 +396,7 @@ public class Mappa extends AppCompatActivity
                 text.setVisibility(View.VISIBLE);
                 NotificationCompat.Builder notBuilder =
                         new NotificationCompat.Builder(context)
-                                .setSmallIcon(R.drawable.flame)
+                                .setSmallIcon(R.drawable.terremoto)
                                 .setContentTitle("Allarme Terremoto")
                                 .setContentText("Segui le istruzioni dell'app")
                                 .setAutoCancel(true)

@@ -26,22 +26,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "FROM:" + remoteMessage.getFrom());
 
         //Check if the message contains data
-        if(remoteMessage.getData().size() > 0) {
+        if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data: " + remoteMessage.getData());
         }
 
         //Check if the message contains notification
 
-        if(remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Mesage body:" + remoteMessage.getNotification().getBody());
-            sendNotification(remoteMessage.getNotification().getBody(), remoteMessage.getNotification().getTitle());
-        }
+        if (remoteMessage.getNotification() != null) {
+            sendNotification(remoteMessage.getData().get("where"), remoteMessage.getData().get("type"));
+       }
     }
 
-    /**
-     * Dispay the notification
-     * @param body
-     */
+
     private void sendNotification(String body, String title) {
 
 //        Intent intent = new Intent(this, MainActivity.class);
