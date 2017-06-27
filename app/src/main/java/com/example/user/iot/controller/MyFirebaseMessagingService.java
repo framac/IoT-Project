@@ -25,9 +25,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         Log.d(TAG, "FROM:" + remoteMessage.getFrom());
 
+        Log.d("ciao", "Message data: " + "ciao");
+
         //Check if the message contains data
         if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data: " + remoteMessage.getData());
+            Log.d("ciao", "Message data: " + "ciao");
         }
 
         //Check if the message contains notification

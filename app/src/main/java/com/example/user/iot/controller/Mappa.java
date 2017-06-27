@@ -1,7 +1,6 @@
 package com.example.user.iot.controller;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -147,10 +146,33 @@ public class Mappa extends AppCompatActivity
     }
 
     @Override
+    protected void onNewIntent(Intent newintent){
+        super.onNewIntent(newintent);
+        setIntent(newintent);
+    }
+
+    @Override
     protected void onResume() {
         datasource.open();
-        checkEmergency(datasource.getAllBeacon());
+        //checkEmergency(datasource.getAllBeacon());
         super.onResume();
+        if (this.getIntent().getExtras() != null) {
+            for (String key : getIntent().getExtras().keySet()) {
+                if(key.equals("where") || key.equals("type")){
+
+                    // qua ti arrivano i valori delle notifiche quando l'app è in background, e dopo aver cliccato sulla notifica;
+                    //la variabile type assumerà un valore tra: Incendio, Incendio1, Illuminazione ...  quindi come sotto.
+                    // sempre come sotto a seconda che type sia Incendio o Incendio1 (Illuminazione o Illuminazione1) where assumerà
+                    // o il valore di un beacon o il valore di un nodo. Dovrai usare questi valori per visualizzare l'oppotuno alert sulla
+                    //mappa che si aprirà al click della notifica. In pratica devi fare le stesse operazioni che fai nel broadcaster reciver a
+                    // secondo del type del alert e della variabile where. Ovviamente per il terremoto non c'è alcun valore per la variabile where.
+                    // A questo punto non c'è più bisogno di controllare i valori delle letture per ciascun beacon quindi elimina tutta la parte di codice
+                    //relativa a checkEmergency(datasource.getAllBeacon()).
+                    String value = getIntent().getExtras().getString(key);
+
+                }
+            }
+        }
     }
 
     @Override
