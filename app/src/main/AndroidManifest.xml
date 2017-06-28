@@ -24,7 +24,7 @@
         </activity>
         <activity
             android:name=".controller.Mappa"
-            android:label="@string/app_name"
+            android:label="Navigation Mode"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

@@ -23,7 +23,7 @@ public class MapViewController {
         floor_150 = new ArrayList<>();
         floor_155 = new ArrayList<>();
         node = new Node(0, 0, R.drawable.purple, 0);
-        currentFloor = 0;
+        changeFloor(145);
     }
 
     private PointF coordConverter(PointF point, int piano){ //coverte le coordinate da metri a pixel dell'immagine in base al piano
@@ -58,7 +58,7 @@ public class MapViewController {
         building.setOnTouchListener(listener);
     }
 
-    public void addNode(Node new_node){
+    public void addNode(Node new_node){ //aggiunge un nodo verificando che non ci sia un duplicato, eventualmente lo cancella
           PointF point = coordConverter(new_node.getPoint(),new_node.getFloor());
           new_node.setPoint(point);
           deleteNode(new_node);
@@ -76,7 +76,7 @@ public class MapViewController {
         }
     }
 
-    private void deleteNode(Node delete){
+    private void deleteNode(Node delete){ //cancella un nodo già presente(non c'è la coordConv)
         ArrayList<Node> list = new ArrayList<>();
         switch(delete.getFloor()){
             case 145: list = floor_145;
@@ -97,7 +97,7 @@ public class MapViewController {
         }
     }
 
-    public void updateBeacon(Node update){
+    public void updateBeacon(Node update){ //aggiorna i valori ambientali di un beacon già presente
         ArrayList<Node> list = new ArrayList<>();
         PointF point = coordConverter(update.getPoint(),update.getFloor());
         update.setPoint(point);

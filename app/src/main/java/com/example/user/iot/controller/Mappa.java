@@ -56,6 +56,7 @@ public class Mappa extends AppCompatActivity
     private MapViewController mapViewController;
     private GestureDetector gestureDetector;
     private BeaconDataSource datasource;
+    private String type;
     boolean service = false;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -112,7 +113,6 @@ public class Mappa extends AppCompatActivity
             }
         });
 
-        mapViewController.changeFloor(145);
         mapViewController.setListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -154,22 +154,47 @@ public class Mappa extends AppCompatActivity
     @Override
     protected void onResume() {
         datasource.open();
-        //checkEmergency(datasource.getAllBeacon());
         super.onResume();
         if (this.getIntent().getExtras() != null) {
             for (String key : getIntent().getExtras().keySet()) {
-                if(key.equals("where") || key.equals("type")){
+                if(key.equals("type")){
+                    type = getIntent().getExtras().getString(key);
 
-                    // qua ti arrivano i valori delle notifiche quando l'app è in background, e dopo aver cliccato sulla notifica;
-                    //la variabile type assumerà un valore tra: Incendio, Incendio1, Illuminazione ...  quindi come sotto.
-                    // sempre come sotto a seconda che type sia Incendio o Incendio1 (Illuminazione o Illuminazione1) where assumerà
-                    // o il valore di un beacon o il valore di un nodo. Dovrai usare questi valori per visualizzare l'oppotuno alert sulla
-                    //mappa che si aprirà al click della notifica. In pratica devi fare le stesse operazioni che fai nel broadcaster reciver a
-                    // secondo del type del alert e della variabile where. Ovviamente per il terremoto non c'è alcun valore per la variabile where.
-                    // A questo punto non c'è più bisogno di controllare i valori delle letture per ciascun beacon quindi elimina tutta la parte di codice
-                    //relativa a checkEmergency(datasource.getAllBeacon()).
-                    String value = getIntent().getExtras().getString(key);
+                }else if(key.equals("where")){
+                    String where = getIntent().getExtras().getString(key);
+                    if(type.equals("Incendio")) {
+                        node = datasource.getBeacon(where);
+                        node.setDrawable("Emergenza");
+                        mapViewController.addNode(node);
+                        mapViewController.changeFloor(node.getFloor());
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
+                        getLastData(where);
+                    }
+                    if(type.equals("Incendio1")){
 
+                    }
+                    if(type.equals("Illuminazione")) {
+                        node = datasource.getBeacon(where);
+                        node.setDrawable("Illuminazione");
+                        mapViewController.addNode(node);
+                        mapViewController.changeFloor(node.getFloor());
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
+                        getLastData(where);
+                    }
+                    if(type.equals("Illuminazione1")){
+
+                    }
+                    if(type.equals("Terremoto")){
+                        text.setText("Allarme Terremoto, segui le indicazioni a schermo");
+                        text.setVisibility(View.VISIBLE);
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
+                    }
+                    if(type.equals("Terremoto1")){
+
+                    }
                 }
             }
         }
@@ -247,8 +272,8 @@ public class Mappa extends AppCompatActivity
             mapViewController.clearFloor(155);
             mapViewController.changeFloor(145);
             text.setVisibility(View.INVISIBLE);
-            setTitle("Normal Mode");
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.BLUE));
+            setTitle("Navigation Mode");
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#3F51B5")));
         } else if (id == R.id.piano145){
             mapViewController.changeFloor(145);
         } else if (id == R.id.piano150){
@@ -292,13 +317,9 @@ public class Mappa extends AppCompatActivity
                 mapViewController.changeFloor(beacon.getFloor());
             }
             else if (intent.getAction().equals("BatteryService")) {
-                //Per ora lasciar così!;
                 int batteryLevel = intent.getExtras().getInt("batteryLevel");
                 String macAddress = intent.getExtras().getString("dove");
             } else if (intent.getAction().equals("Incendio")) {
-                //Se sei qui è perchè è stato rilevato un incendio da un beacon quindi devi usare
-                //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
-                //tale posizione un incendio
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Emergenza");
@@ -314,9 +335,6 @@ public class Mappa extends AppCompatActivity
                 String nodo = intent.getExtras().getString("dove");
 
             } else if (intent.getAction().equals("Illuminazione")) {
-                //Se sei qui è perchè è stato rilevato un problema di illuminazione da un beacon quindi devi usare
-                //la var. macAdress qui sotto per recuperare la posizione del beacon e segnalare in
-                //tale posizione un problema di illuminazione
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
                 node.setDrawable("Illuminazione");
@@ -332,9 +350,6 @@ public class Mappa extends AppCompatActivity
                 String nodo = intent.getExtras().getString("dove");
 
             } else if (intent.getAction().equals("Terremoto")) {
-                //Se sei qui è perchè è stato rilevato un terremoto da un beacon. Io ti passo il macAdress
-                // ma visto che il terremoto riguarda tutto l'edificio gestisci come credi meglio l'ermergenza, nel
-                //senso che non ce bisogno che fai vedere il pericolo in un punto particolare. Fai come credi meglio
                 //String macAddress = intent.getExtras().getString("dove");
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
@@ -395,67 +410,6 @@ public class Mappa extends AppCompatActivity
         }
     };
 
-    private Response.Listener<JSONObject> postListener2= new Response.Listener<JSONObject>()
-    {
-        @Override
-        public void onResponse(JSONObject response) {
-
-            try {
-                if(response != null) {
-                    Log.d(getString(R.string.datiAmbientali), "Dati ricevuti");
-                    List<String> datiAmbientali = new ArrayList<>();
-                    datiAmbientali.add(response.getString("macAdd"));
-                    datiAmbientali.add(response.getString("batteria"));
-                    datiAmbientali.add(response.getString("temperatura"));
-                    datiAmbientali.add(response.getString("xAcc"));
-                    datiAmbientali.add(response.getString("yAcc"));
-                    datiAmbientali.add(response.getString("zAcc"));
-                    datiAmbientali.add(response.getString("lux"));
-                    node = datasource.getBeacon(response.getString("macAdd"));
-                    node.setBeacon(datiAmbientali);
-                    if(response.getDouble("temperatura")>60){
-                        node.setDrawable("Emergenza");
-                        mapViewController.addNode(node);
-                        mapViewController.changeFloor(node.getFloor());
-                        setTitle("Alert Mode");
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                    }
-                    if(response.getDouble("xAcc")>1.5 || response.getDouble("xAcc")<-1.5){
-                        text.setText("Allarme Terremoto, segui le indicazioni a schermo");
-                        text.setVisibility(View.VISIBLE);
-                        setTitle("Alert Mode");
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                    }
-                    if(response.getDouble("yAcc")>1.5 || response.getDouble("yAcc")<-1.5){
-                        text.setText("Allarme Terremoto, segui le indicazioni a schermo");
-                        text.setVisibility(View.VISIBLE);
-                        setTitle("Alert Mode");
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                    }
-                    if(response.getDouble("zAcc")>1.5 || response.getDouble("zAcc")<-1.5){
-                        text.setText("Allarme Terremoto, segui le indicazioni a schermo");
-                        text.setVisibility(View.VISIBLE);
-                        setTitle("Alert Mode");
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                    }
-                    if(response.getInt("lux")==0){
-                        node.setDrawable("Illuminazione");
-                        mapViewController.addNode(node);
-                        mapViewController.changeFloor(node.getFloor());
-                        setTitle("Alert Mode");
-                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                    }
-
-                } else{
-                    Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    };
-
     private Response.ErrorListener errorListener=new Response.ErrorListener()
     {
         @Override
@@ -469,14 +423,5 @@ public class Mappa extends AppCompatActivity
         RequestQueue mRequestQueue= Volley.newRequestQueue(this);
         JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.getDatiAmb)+macAddress, null, postListener, errorListener);
         mRequestQueue.add(request);
-    }
-
-    private void checkEmergency(ArrayList<Node> list){
-        for (int i = 0; i < list.size(); i++) {
-            RequestQueue mRequestQueue = Volley.newRequestQueue(this);
-            JsonObjectRequest request = new JsonObjectRequest(getResources().getString(R.string.getDatiAmb)
-                                            + list.get(i).getBeacon().get(0), null, postListener2, errorListener);
-            mRequestQueue.add(request);
-        }
     }
 }
