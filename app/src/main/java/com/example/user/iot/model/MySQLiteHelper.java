@@ -18,7 +18,10 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NODI = "nodi";
     public static final String COLUMN_KEY = "_key";
+    public static final String COLUMN_COORDX = "coordx";
+    public static final String COLUMN_COORDY = "coordy";
     public static final String COLUMN_QUOTA = "quota";
+    public static final String COLUMN_CODICE = "codice";
 
 
     //Database
@@ -38,7 +41,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     //Tabella nodi
     private static final String DATABASE_NODI =  "create table "
             + TABLE_NODI + "( " + COLUMN_KEY
-            + " integer primary key autoincrement, " + COLUMN_QUOTA + " text not null);";
+            + " integer primary key autoincrement, " + COLUMN_COORDX + " integer not null, "
+            + COLUMN_COORDY + " integer not null, " + COLUMN_QUOTA + " text not null, " + COLUMN_CODICE + " text not null);";
 
 
     public MySQLiteHelper(Context context) {

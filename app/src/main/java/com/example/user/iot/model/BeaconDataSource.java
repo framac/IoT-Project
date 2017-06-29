@@ -26,7 +26,8 @@ public class BeaconDataSource {
 
     //Colonne tabella nodi
     private String[] Columns = {MySQLiteHelper.COLUMN_KEY,
-            MySQLiteHelper.COLUMN_QUOTA};
+            MySQLiteHelper.COLUMN_COORDX, MySQLiteHelper.COLUMN_COORDY,
+            MySQLiteHelper.COLUMN_QUOTA, MySQLiteHelper.COLUMN_CODICE};
 
 
     public JSONObject beaconObject;
@@ -119,16 +120,21 @@ public class BeaconDataSource {
 
 
     public void createNode(JSONArray nodes) {
+        //Per svuotare la tabella per i vari test dell'aplicazione
+        //database.delete(MySQLiteHelper.TABLE_NODI, MySQLiteHelper.COLUMN_KEY, null);
+
         ContentValues values = new ContentValues();
         long nodeId = 0;
         try{
             for (int i = 0; i < nodes.length(); i++) {
                 i++;
                 nodeObject = nodes.getJSONObject(i);
-                values.put(MySQLiteHelper.COLUMN_QUOTA, nodeObject.getString("FIELD1"));
+                values.put(MySQLiteHelper.COLUMN_COORDX, nodeObject.getString("FIELD1"));
+                values.put(MySQLiteHelper.COLUMN_COORDY, nodeObject.getString("FIELD2"));
+                values.put(MySQLiteHelper.COLUMN_QUOTA, nodeObject.getString("FIELD3"));
+                values.put(MySQLiteHelper.COLUMN_CODICE, nodeObject.getString("FIELD4"));
                 nodeId = database.insert(MySQLiteHelper.TABLE_NODI, null,
                         values);
-
 
             }
         } catch (JSONException e) {
@@ -148,7 +154,7 @@ public class BeaconDataSource {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             id=String.valueOf(cursor.getLong(0));
-            listNodes.add("Nodo: "+cursor.getString(1));
+            listNodes.add("Coordinata x: "+cursor.getLong(1)+ " coordinata y : "+cursor.getLong(2)+", quota: "+cursor.getString(3)+ ", codice: "+cursor.getString(4));
             cursor.moveToNext();
         }
         // make sure to close the cursor
