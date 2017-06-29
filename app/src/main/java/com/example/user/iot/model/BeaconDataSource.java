@@ -18,11 +18,19 @@ public class BeaconDataSource {
     // Database fields
     private SQLiteDatabase database;
     private MySQLiteHelper dbHelper;
+
+    //Colonne tabella beacon
     private String[] allColumns = {MySQLiteHelper.COLUMN_ID,
             MySQLiteHelper.COLUMN_MACADDRESS, MySQLiteHelper.COLUMN_POSIZIONE, MySQLiteHelper.COLUMN_PIANO,
             MySQLiteHelper.COLUMN_X,MySQLiteHelper.COLUMN_Y};
 
+    //Colonne tabella nodi
+    private String[] Columns = {MySQLiteHelper.COLUMN_KEY,
+            MySQLiteHelper.COLUMN_QUOTA};
+
+
     public JSONObject beaconObject;
+    public JSONObject nodeObject;
 
     public BeaconDataSource(Context context) {
         dbHelper = new MySQLiteHelper(context);
@@ -35,7 +43,6 @@ public class BeaconDataSource {
     public void close() {
         dbHelper.close();
     }
-
 
 
     public void createBeacon(JSONArray beacon) {
@@ -108,5 +115,46 @@ public class BeaconDataSource {
     public void updateBeacon(JSONArray beacon) {
         database.delete(MySQLiteHelper.TABLE_BEACON, MySQLiteHelper.COLUMN_ID, null);
         createBeacon(beacon);
+    }
+
+
+    public void createNode(JSONArray nodes) {
+        ContentValues values = new ContentValues();
+        long nodeId = 0;
+        try{
+            for (int i = 0; i < nodes.length(); i++) {
+                i++;
+                nodeObject = nodes.getJSONObject(i);
+                values.put(MySQLiteHelper.COLUMN_QUOTA, nodeObject.getString("FIELD1"));
+                nodeId = database.insert(MySQLiteHelper.TABLE_NODI, null,
+                        values);
+
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    public List<String> getAllNodes() {
+        List<String> listNodes= new ArrayList<String>();
+        String id;
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_NODI,
+                Columns, null, null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            id=String.valueOf(cursor.getLong(0));
+            listNodes.add("Nodo: "+cursor.getString(1));
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return listNodes;
+
+
     }
 }

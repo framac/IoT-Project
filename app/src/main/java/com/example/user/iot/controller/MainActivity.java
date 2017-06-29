@@ -33,6 +33,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -108,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
         registrati.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    Intent registrazione = new Intent(getApplicationContext(), Registrazione.class);
-                    startActivity(registrazione);
+                Intent registrazione = new Intent(getApplicationContext(), Registrazione.class);
+                startActivity(registrazione);
 
             }
         });
@@ -162,9 +165,9 @@ public class MainActivity extends AppCompatActivity {
     private Response.ErrorListener errorListener=new Response.ErrorListener() {
         @Override
         public void onErrorResponse(VolleyError err)
-           {
-                    Log.d(MainActivity.context.getResources().getString(R.string.serverError), "Errore di rete. Non è stato possibile accedere al server");
-           }
+        {
+            Log.d(MainActivity.context.getResources().getString(R.string.serverError), "Errore di rete. Non è stato possibile accedere al server");
+        }
     };
 
     private Response.Listener<JSONObject> postListener= new Response.Listener<JSONObject>() {
@@ -185,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             } catch (JSONException e) {
-                    e.printStackTrace();
+                e.printStackTrace();
             }
         }
     };
@@ -203,6 +206,32 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    public String loadJSONFromAsset() {
+        String json = null;
+        try {
+            InputStream is = getApplicationContext().getAssets().open("nodi.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+    }
+
+    public void readNodi() {
+        try{
+            JSONArray nodes = new JSONArray(loadJSONFromAsset());
+            datasource.createNode(nodes);
+
+        }catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private Response.Listener<JSONArray> postListenerJsonArray= new Response.Listener<JSONArray>(){
         @Override
@@ -213,10 +242,10 @@ public class MainActivity extends AppCompatActivity {
                 editorBeacon.putBoolean("secondTime", true);
                 editorBeacon.commit();
                 datasource.createBeacon(response);
+                readNodi();
             }
 
         }
     };
 
 }
-
