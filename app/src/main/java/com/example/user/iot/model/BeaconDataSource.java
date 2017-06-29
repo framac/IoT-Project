@@ -125,23 +125,26 @@ public class BeaconDataSource {
 
         ContentValues values = new ContentValues();
         long nodeId = 0;
+        int i=0;
         try{
-            for (int i = 0; i < nodes.length(); i++) {
-                i++;
-                nodeObject = nodes.getJSONObject(i);
-                values.put(MySQLiteHelper.COLUMN_COORDX, nodeObject.getString("FIELD1"));
-                values.put(MySQLiteHelper.COLUMN_COORDY, nodeObject.getString("FIELD2"));
-                values.put(MySQLiteHelper.COLUMN_QUOTA, nodeObject.getString("FIELD3"));
-                values.put(MySQLiteHelper.COLUMN_CODICE, nodeObject.getString("FIELD4"));
-                nodeId = database.insert(MySQLiteHelper.TABLE_NODI, null,
-                        values);
-
+            while (i < nodes.length()) {
+                if(i==0){
+                    i++;
+                }
+                else {
+                    nodeObject = nodes.getJSONObject(i);
+                    values.put(MySQLiteHelper.COLUMN_COORDX, nodeObject.getString("FIELD1"));
+                    values.put(MySQLiteHelper.COLUMN_COORDY, nodeObject.getString("FIELD2"));
+                    values.put(MySQLiteHelper.COLUMN_QUOTA, nodeObject.getString("FIELD3"));
+                    values.put(MySQLiteHelper.COLUMN_CODICE, nodeObject.getString("FIELD4"));
+                    nodeId = database.insert(MySQLiteHelper.TABLE_NODI, null,
+                            values);
+                    i++;
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
     }
 
 
