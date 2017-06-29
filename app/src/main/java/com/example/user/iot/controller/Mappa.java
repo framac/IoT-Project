@@ -31,9 +31,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
@@ -41,6 +43,7 @@ import com.example.user.iot.model.BeaconDataSource;
 import com.example.user.iot.model.CustomMapView;
 import com.example.user.iot.model.Node;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,7 +55,6 @@ public class Mappa extends AppCompatActivity
     private ArrayList<Node> list;
     private Node node;
     private TextView text;
-    private CustomMapView customMapView;
     private MapViewController mapViewController;
     private GestureDetector gestureDetector;
     private BeaconDataSource datasource;
@@ -81,7 +83,7 @@ public class Mappa extends AppCompatActivity
         datasource.open();
 
         text = (TextView) findViewById(R.id.textView);
-        customMapView = (CustomMapView) findViewById(R.id.map);
+        CustomMapView customMapView = (CustomMapView) findViewById(R.id.map);
         mapViewController = new MapViewController(customMapView);
 
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -159,7 +161,12 @@ public class Mappa extends AppCompatActivity
             for (String key : getIntent().getExtras().keySet()) {
                 if(key.equals("type")){
                     type = getIntent().getExtras().getString(key);
-
+                    if(type.equals("Beacon Cambiati")){
+                        RequestQueue mRequestQueue= Volley.newRequestQueue(this);
+                        JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,
+                                getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener2);
+                        mRequestQueue.add(request);
+                    }
                 }else if(key.equals("where")){
                     String where = getIntent().getExtras().getString(key);
                     if(type.equals("Incendio")) {
@@ -172,7 +179,12 @@ public class Mappa extends AppCompatActivity
                         getLastData(where);
                     }
                     if(type.equals("Incendio1")){
-
+                        node = datasource.getNode(where);
+                        node.setDrawable("Emergenza");
+                        mapViewController.addNode(node);
+                        mapViewController.changeFloor(node.getFloor());
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                     }
                     if(type.equals("Illuminazione")) {
                         node = datasource.getBeacon(where);
@@ -184,7 +196,12 @@ public class Mappa extends AppCompatActivity
                         getLastData(where);
                     }
                     if(type.equals("Illuminazione1")){
-
+                        node = datasource.getNode(where);
+                        node.setDrawable("Illuminazione");
+                        mapViewController.addNode(node);
+                        mapViewController.changeFloor(node.getFloor());
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                     }
                     if(type.equals("Terremoto")){
                         text.setText("Allarme Terremoto, segui le indicazioni a schermo");
@@ -197,6 +214,9 @@ public class Mappa extends AppCompatActivity
                     }
                 }
             }
+        } else {
+            Intent resIntent = new Intent("ricercaPosizione");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
         }
     }
 
@@ -253,28 +273,7 @@ public class Mappa extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.test1) { //test db
-            node = datasource.getBeacon("24:71:89:E7:13:87");
-            mapViewController.addNode(node);
-            mapViewController.changeFloor(node.getFloor());
-        } else if (id == R.id.test2) {
-
-        } else if(id == R.id.test3){ //test server e messaggio
-            node = new Node(129,465,"Beacon",150);
-            mapViewController.addNode(node);
-            mapViewController.changeFloor(150);
-            getLastData("24:71:89:E7:13:87");
-            text.setText("Emergenza in corso, segui le indicazioni a schermo");
-            text.setVisibility(View.VISIBLE);
-        } else if(id == R.id.reset){
-            mapViewController.clearFloor(145);
-            mapViewController.clearFloor(150);
-            mapViewController.clearFloor(155);
-            mapViewController.changeFloor(145);
-            text.setVisibility(View.INVISIBLE);
-            setTitle("Navigation Mode");
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#3F51B5")));
-        } else if (id == R.id.piano145){
+        if (id == R.id.piano145){
             mapViewController.changeFloor(145);
         } else if (id == R.id.piano150){
             mapViewController.changeFloor(150);
@@ -283,6 +282,30 @@ public class Mappa extends AppCompatActivity
         } else if (id == R.id.ricerca){
             Intent resIntent = new Intent("ricercaPosizione");
             LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+        }else if(id == R.id.reset){
+            mapViewController.clearFloor(145);
+            mapViewController.clearFloor(150);
+            mapViewController.clearFloor(155);
+            mapViewController.changeFloor(145);
+            text.setVisibility(View.INVISIBLE);
+            setTitle("Navigation Mode");
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#3F51B5")));
+        }else if (id == R.id.test1) { //test beacon db
+            node = datasource.getBeacon("24:71:89:E7:13:87");
+            mapViewController.addNode(node);
+            mapViewController.changeFloor(node.getFloor());
+        } else if (id == R.id.test2) { //test nodo db
+            node = datasource.getNode("150WC1");
+            mapViewController.addNode(node);
+            mapViewController.changeFloor(node.getFloor());
+        } else if(id == R.id.test3){ //test emergenza
+            node = new Node(129,465,"Beacon",150);
+            node.setDrawable("Emergenza");
+            mapViewController.addNode(node);
+            mapViewController.changeFloor(150);
+            getLastData("24:71:89:E7:13:87");
+            text.setText("Emergenza in corso, segui le indicazioni a schermo");
+            text.setVisibility(View.VISIBLE);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -297,17 +320,6 @@ public class Mappa extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
 
             if (intent.getAction().equals("DeviceParameters")){
-                //Qua ricevi il macAddres del beacon più vicino, quindi devi usare questo valore
-                //per mostare la tua posizione sulla mappa. Ti arriverà questo valore ogni volta
-                // che l'app si connette con un beacon
-
-                //Sempre qua riceverai la posizione quando si cliccherà sul tasto ricerca posizione
-                // (che è da aggiungere alla tua view, dove preferisci, Come richiesto all'ultima revisione)
-                //nell'actionListener sul tasto devi aggiungere queste linee di codice per ottenere la posizione:
-
-                //Intent resIntent = new Intent("ricercaPosizione");
-                //LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
-
                 String macAddress = intent.getExtras().getString("macadress");
                 double distance = intent.getExtras().getDouble("distance");
                 Node beacon = datasource.getBeacon(macAddress);
@@ -315,10 +327,6 @@ public class Mappa extends AppCompatActivity
                                         R.drawable.user,beacon.getFloor());
                 mapViewController.addNode(utente);
                 mapViewController.changeFloor(beacon.getFloor());
-            }
-            else if (intent.getAction().equals("BatteryService")) {
-                int batteryLevel = intent.getExtras().getInt("batteryLevel");
-                String macAddress = intent.getExtras().getString("dove");
             } else if (intent.getAction().equals("Incendio")) {
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
@@ -329,11 +337,13 @@ public class Mappa extends AppCompatActivity
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                 getLastData(macAddress);
             } else if (intent.getAction().equals("Incendio1")) {
-                //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un incendio
-                // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato l'incendio
-                //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
-
+                node = datasource.getNode(nodo);
+                node.setDrawable("Emergenza");
+                mapViewController.addNode(node);
+                mapViewController.changeFloor(node.getFloor());
+                setTitle("Alert Mode");
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
             } else if (intent.getAction().equals("Illuminazione")) {
                 String macAddress = intent.getExtras().getString("dove");
                 node = datasource.getBeacon(macAddress);
@@ -344,11 +354,13 @@ public class Mappa extends AppCompatActivity
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                 getLastData(macAddress);
             } else if (intent.getAction().equals("Illuminazione1")) {
-                //Se sei qui è perchè qualcuno manualmente ha invianto un alert per un problema di illuminazione
-                // devi quindi utilizzare la variabile nodo per capire dove è stato segnalato il problema
-                //e visualizzarlo sulla mappa
                 String nodo = intent.getExtras().getString("dove");
-
+                node = datasource.getNode(nodo);
+                node.setDrawable("Illuminazione");
+                mapViewController.addNode(node);
+                mapViewController.changeFloor(node.getFloor());
+                setTitle("Alert Mode");
+                getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
             } else if (intent.getAction().equals("Terremoto")) {
                 //String macAddress = intent.getExtras().getString("dove");
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
@@ -357,8 +369,6 @@ public class Mappa extends AppCompatActivity
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
 
             } else if (intent.getAction().equals("Terremoto1")) {
-                //Se sei qui è perchè è stato Inviato manualmente un alert per un terremoto. Qua non ho
-                //nessun parametro da darti quindi gestisci come sopra e come credi meglio
                 text.setText("Allarme Terremoto, segui le indicazioni a schermo");
                 text.setVisibility(View.VISIBLE);
                 setTitle("Alert Mode");
@@ -410,12 +420,31 @@ public class Mappa extends AppCompatActivity
         }
     };
 
+    private Response.Listener<JSONArray> postListenerJsonArray= new Response.Listener<JSONArray>(){
+        @Override
+        public void onResponse(JSONArray response) {
+
+            BeaconDataSource datasource =  new BeaconDataSource(MainActivity.context);
+            datasource.open();
+            datasource.updateBeacon(response);
+            recreate();
+        }
+    };
+
     private Response.ErrorListener errorListener=new Response.ErrorListener()
     {
         @Override
         public void onErrorResponse(VolleyError err)
         {
             Log.d(getString(R.string.datiAmbientali), "Erorre di rete: " +err.getMessage());
+        }
+    };
+
+    private Response.ErrorListener errorListener2=new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError err)
+        {
+            Log.d(MainActivity.context.getResources().getString(R.string.serverError), "Errore di rete. Non è stato possibile accedere al server");
         }
     };
 

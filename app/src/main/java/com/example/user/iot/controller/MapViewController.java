@@ -179,7 +179,7 @@ public class MapViewController {
     }
 
     public void clearFloor(int floor){ //svuota l'array di nodi del piano scelto resettandolo
-        ArrayList<Node> list = new ArrayList<Node>();
+        ArrayList<Node> list = new ArrayList<>();
         switch(floor) {
             case 145: floor_145 = list;
                 break;

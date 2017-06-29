@@ -147,6 +147,21 @@ public class BeaconDataSource {
         }
     }
 
+    public Node getNode(String code){
+        Node node = null;
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_NODI,
+                Columns, "codice = ?", new String[]{code}, null, null, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+
+            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Beacon",cursor.getInt(3));
+            node.setId(cursor.getString(4));
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return node;
+    }
 
     public List<String> getAllNodes() {
         List<String> listNodes= new ArrayList<String>();
