@@ -44,6 +44,8 @@
     <string name="serverError"> Server error </string>
     <string name="token"> Token </string>
     <string name="username"> Username </string>
+    <string name="registrazione"> Registrazione </string>
+    <string name="autenticazione"> Autenticazione </string>
 
     <!-- Server -->
     <string name="saveDatiAmb">http://hostiot.ddns.net:8080/IotServer/datiAmbientali/newDatoAmbientale</string>
@@ -51,5 +53,7 @@
     <string name="saveNewUser">http://hostiot.ddns.net:8080/IotServer/utenti/getNewUsername</string>
     <string name="getBeacon">http://hostiot.ddns.net:8080/IotServer/beacons</string>
     <string name="getDatiAmb">http://hostiot.ddns.net:8080/IotServer/datiAmbientali/getLastData/</string>
+    <string name="newUser">http://hostiot.ddns.net:8080/IotServer/utenti/newuser</string>
+    <string name="controlUser">http://hostiot.ddns.net:8080/IotServer/utenti/</string>
 
 </resources>

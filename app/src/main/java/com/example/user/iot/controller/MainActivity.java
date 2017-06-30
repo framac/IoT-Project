@@ -14,10 +14,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -28,6 +30,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.iot.R;
 import com.example.user.iot.model.BeaconDataSource;
+import com.example.user.iot.utility.Md5Utility;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button accedi,registrati;
     EditText editUser,editPass;
+    TextView utenteOspite;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
     public static Context context;
@@ -51,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     public BeaconDataSource datasource;
     public SharedPreferences prefBeacon;
     public SharedPreferences.Editor editorBeacon;
+    public Md5Utility PasswordCrypt;
+    public String pass;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -107,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         registrati = (Button) findViewById(R.id.Registrati);
         editUser =  (EditText) findViewById(R.id.txtUser);
         editPass = (EditText) findViewById(R.id.txtPass);
+        utenteOspite = (TextView) findViewById(R.id.UtenteOspite);
 
         registrati.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,11 +127,30 @@ public class MainActivity extends AppCompatActivity {
         accedi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent mappa = new Intent(getApplicationContext(),Mappa.class);
-                startActivity(mappa);
+                if(!TextUtils.isEmpty(editUser.getText().toString()) && !TextUtils.isEmpty(editPass.getText().toString())){
+                    pass=PasswordCrypt.encrypt(editPass.getText().toString());
+                    RequestQueue mRequestQueue= Volley.newRequestQueue(context);
+                    JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.controlUser)+"username/"+editUser.getText().toString()+"/password/"+pass, null, postListener, errorListener);
+                    mRequestQueue.add(request);
+                }
+                else if (TextUtils.isEmpty(editUser.getText().toString())){
+                    editUser.setError("Il campo non può essere vuoto!");
+                }
+                else if (TextUtils.isEmpty(editPass.getText().toString())){
+                    editPass.setError("Il campo non può essere vuoto!");
+                }
 
             }
         });
+
+        utenteOspite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mappa = new Intent(getApplicationContext(),Mappa.class);
+                startActivity(mappa);
+            }
+        });
+
     }
 
     @Override
@@ -175,7 +201,15 @@ public class MainActivity extends AppCompatActivity {
         public void onResponse(JSONObject response) {
             try {
                 String ris=response.getString("response");
-                if(!ris.equals("null")) {
+                if (ris.equals("true")){
+                    Intent mappa = new Intent(getApplicationContext(),Mappa.class);
+                    startActivity(mappa);
+                    Log.d(MainActivity.context.getResources().getString(R.string.autenticazione), "Autenticazione avvenuta con successo");
+                }
+                else if (ris.equals("false")){
+                    Log.d(MainActivity.context.getResources().getString(R.string.autenticazione), "Autenticazione fallita");
+                }
+                else if(!ris.equals("null")){
                     editor = prefs.edit();
                     editor.putBoolean("firstTimeUsername", true);
                     editor.putString("username",ris);
