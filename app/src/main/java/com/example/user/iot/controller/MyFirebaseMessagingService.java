@@ -42,24 +42,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendNotification(String body, String title) {
 
-//        Intent intent = new Intent(this, MainActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//
-//            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0/*Request code*/, intent, PendingIntent.FLAG_ONE_SHOT);
-//            //Set sound of notification
-//            Uri notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-//
-//            NotificationCompat.Builder notifiBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-//                    .setSmallIcon(R.mipmap.ic_launcher)
-//                    .setContentTitle(title)
-//                    .setContentText(body)
-//                    .setAutoCancel(true)
-//                    .setSound(notificationSound)
-//                    .setContentIntent(pendingIntent);
-//
-//        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-//        notificationManager.notify(0 /*ID of notification*/, notifiBuilder.build());
-
         if(title.equals("Beacon Cambiati")){
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
@@ -84,6 +66,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             BeaconDataSource datasource =  new BeaconDataSource(MainActivity.context);
             datasource.open();
             datasource.updateBeacon(response);
+            Broadcaster("recreate");
+
         }
     };
 
@@ -94,5 +78,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(MainActivity.context.getResources().getString(R.string.serverError), "Errore di rete. Non è stato possibile accedere al server");
         }
     };
+
+    private void Broadcaster(String title){
+
+        Intent resIntent = new Intent(title);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+    }
+
 
 }

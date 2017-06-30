@@ -210,7 +210,10 @@ public class Mappa extends AppCompatActivity
                         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                     }
                     if(type.equals("Terremoto1")){
-
+                        text.setText("Allarme Terremoto, segui le indicazioni a schermo");
+                        text.setVisibility(View.VISIBLE);
+                        setTitle("Alert Mode");
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
                     }
                 }
             }
@@ -373,7 +376,11 @@ public class Mappa extends AppCompatActivity
                 text.setVisibility(View.VISIBLE);
                 setTitle("Alert Mode");
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-            }
+            } else if (intent.getAction().equals("recreate")) {
+                recreate();
+        }
+
+
         }
     };
 
@@ -387,6 +394,7 @@ public class Mappa extends AppCompatActivity
         fi.addAction("Illuminazione1");
         fi.addAction("Terremoto");
         fi.addAction("Terremoto1");
+        fi.addAction("recreate");
         return fi;
     }
 

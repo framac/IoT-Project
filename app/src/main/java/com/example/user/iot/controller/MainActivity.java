@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         prefBeacon=PreferenceManager.getDefaultSharedPreferences(this);
 
         //richiesta
-        if(!prefs.getBoolean("firstTime", false)) {
+        if(!prefs.getBoolean("firstTimeUsername", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.saveNewUser), null, postListener, errorListener);
             mRequestQueue.add(request);
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //richiesta posizioni dei beacon
-        if(!prefBeacon.getBoolean("secondTime", false)) {
+        if(!prefBeacon.getBoolean("firstTimeDb", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
             mRequestQueue.add(request);
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 String ris=response.getString("response");
                 if(!ris.equals("null")) {
                     editor = prefs.edit();
-                    editor.putBoolean("firstTime", true);
+                    editor.putBoolean("firstTimeUsername", true);
                     editor.putString("username",ris);
                     editor.commit();
                     MyFirebaseInstanceIDService.sendRegistrationToServer(ris);
@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= 19) {
                 // run your one time code
                 editorBeacon = prefBeacon.edit();
-                editorBeacon.putBoolean("secondTime", true);
+                editorBeacon.putBoolean("firstTimeDb", true);
                 editorBeacon.commit();
                 datasource.createBeacon(response);
                 readNodi();
