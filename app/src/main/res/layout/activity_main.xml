@@ -136,7 +136,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:linksClickable="true"
             android:text="Accedi come utente ospite"
             android:textAlignment="center"
             android:textSize="15dp"
