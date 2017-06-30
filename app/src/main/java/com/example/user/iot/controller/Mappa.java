@@ -122,6 +122,13 @@ public class Mappa extends AppCompatActivity
             }
         });
 
+        ArrayList<Node> start = datasource.getAllBeacon();
+        mapViewController.addNodes(start);
+        for (int i = 0; i < start.size(); i++) {
+           getLastData(start.get(i).getBeacon().get(0));
+        }
+        mapViewController.addNodes(datasource.getExit());
+
         BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = btManager.getAdapter();
 
@@ -417,7 +424,6 @@ public class Mappa extends AppCompatActivity
                     node = datasource.getBeacon(response.getString("macAdd"));
                     node.setBeacon(datiAmbientali);
                     mapViewController.updateBeacon(node);
-                    mapViewController.changeFloor(node.getFloor());
                 } else{
                     Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
                 }

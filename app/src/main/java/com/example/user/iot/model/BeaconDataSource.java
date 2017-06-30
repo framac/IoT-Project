@@ -163,6 +163,26 @@ public class BeaconDataSource {
         return node;
     }
 
+    public ArrayList<Node> getExit() {
+        ArrayList<Node> listExit= new ArrayList<>();
+        Node node = null;
+
+        String query = "SELECT * FROM "+MySQLiteHelper.TABLE_NODI+" WHERE "+MySQLiteHelper.COLUMN_CODICE+" LIKE '%EM%'";
+        Cursor cursor = database.rawQuery(query, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Uscita",cursor.getInt(3));
+            node.setId(cursor.getString(4));
+            listExit.add(node);
+            cursor.moveToNext();
+        }
+        // make sure to close the cursor
+        cursor.close();
+        return listExit;
+
+    }
+
     public List<String> getAllNodes() {
         List<String> listNodes= new ArrayList<String>();
         String id;
