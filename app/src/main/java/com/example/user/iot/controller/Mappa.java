@@ -63,7 +63,7 @@ public class Mappa extends AppCompatActivity
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    protected void onCreate(Bundle savedInstanceState) { //TODO:caricare tutti i beacon e le uscite
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mappa);
 
@@ -293,13 +293,7 @@ public class Mappa extends AppCompatActivity
             Intent resIntent = new Intent("ricercaPosizione");
             LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
         }else if(id == R.id.reset){
-            mapViewController.clearFloor(145);
-            mapViewController.clearFloor(150);
-            mapViewController.clearFloor(155);
-            mapViewController.changeFloor(145);
-            text.setVisibility(View.INVISIBLE);
-            setTitle("Navigation Mode");
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#3F51B5")));
+            recreate();
         }else if (id == R.id.test1) { //test beacon db
             node = datasource.getBeacon("24:71:89:E7:13:87");
             mapViewController.addNode(node);
@@ -421,9 +415,13 @@ public class Mappa extends AppCompatActivity
                     datiAmbientali.add(response.getString("yAcc"));
                     datiAmbientali.add(response.getString("zAcc"));
                     datiAmbientali.add(response.getString("lux"));
-                    node = datasource.getBeacon(response.getString("macAdd"));
-                    node.setBeacon(datiAmbientali);
-                    mapViewController.updateBeacon(node);
+                    if(response.getString("macAdd").equals("null")) {
+
+                    }else{
+                        node = datasource.getBeacon(response.getString("macAdd"));
+                        node.setBeacon(datiAmbientali);
+                        mapViewController.updateBeacon(node);
+                    }
                 } else{
                     Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
                 }
