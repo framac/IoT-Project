@@ -165,6 +165,9 @@ public class Mappa extends AppCompatActivity
                 startService(new Intent(getBaseContext(), GestioneConnessioneBA.class));
                 LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
                 service = true;
+                btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                btAdapter = btManager.getAdapter();
+                btScanner = btAdapter.getBluetoothLeScanner();
             } else{
                 AlertDialog.Builder builder=new AlertDialog.Builder(this);
                 builder.setTitle("Ricorda!");
@@ -492,7 +495,6 @@ public class Mappa extends AppCompatActivity
             BeaconDataSource datasource =  new BeaconDataSource(MainActivity.context);
             datasource.open();
             datasource.updateBeacon(response);
-            recreate();
         }
     };
 
