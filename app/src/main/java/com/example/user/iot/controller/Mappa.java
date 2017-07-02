@@ -274,8 +274,7 @@ public class Mappa extends AppCompatActivity
                 }
             }
         } else {
-            Intent resIntent = new Intent("ricercaPosizione");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+           ricercaPosizione();
         }
     }
 
@@ -342,8 +341,7 @@ public class Mappa extends AppCompatActivity
             ricercaAula.setVisibility(View.INVISIBLE);
             mapViewController.changeFloor(155);
         } else if (id == R.id.ricerca){
-            Intent resIntent = new Intent("ricercaPosizione");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+            ricercaPosizione();
         } else if (id == R.id.ricercaAula){
             ricercaAula.setVisibility(View.VISIBLE);
             ricercaAula.bringToFront();
