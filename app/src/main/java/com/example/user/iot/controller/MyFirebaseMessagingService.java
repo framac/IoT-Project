@@ -29,7 +29,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         //Check if the message contains data
         if (remoteMessage.getData().size() > 0) {
-            Log.d("ciao", "Message data: " + "ciao");
+            Log.d("ciao", "Message data: " + remoteMessage.getData().get("type"));
         }
 
         //Check if the message contains notification
@@ -42,21 +42,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendNotification(String body, String title) {
 
-        if(title.equals("Beacon Cambiati")){
-            RequestQueue mRequestQueue= Volley.newRequestQueue(this);
-            JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
-            mRequestQueue.add(request);
-        } else{
-            Intent resIntent = new Intent(title);
-            if(!body.equals("null")){
-                resIntent.putExtra("dove", body);
+        if (title != null){
+            if(title.equals("Beacon Cambiati")){
+                RequestQueue mRequestQueue= Volley.newRequestQueue(this);
+                JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
+                mRequestQueue.add(request);
+            } else{
+                Intent resIntent = new Intent(title);
+                if(!body.equals("null")){
+                    resIntent.putExtra("dove", body);
+                }
+                LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+
+                Intent resIntent2 = new Intent("alert");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent2);
             }
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
-
-            Intent resIntent2 = new Intent("alert");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent2);
         }
-
     }
 
     private Response.Listener<JSONArray> postListenerJsonArray= new Response.Listener<JSONArray>(){

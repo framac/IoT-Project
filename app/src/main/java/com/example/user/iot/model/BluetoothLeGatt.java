@@ -293,8 +293,8 @@ public class BluetoothLeGatt extends IntentService {
     }
 
     private void broadcastUpdate(double x, double y, double z) {
-        if((x >= xAccThreshold  || x <= xAccThreshold)|| (y >= yAccThreshold || y <= yAccThreshold)
-            || (z >= zAccThreshold || z <= zAccThreshold)){
+        if((x >= xAccThreshold  || x <= - xAccThreshold)|| (y >= yAccThreshold || y <= - yAccThreshold)
+            || (z >= zAccThreshold || z <= - zAccThreshold)){
             Intent resIntent = new Intent("Terremoto");
             resIntent.putExtra("dove", macAddress);
             LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);

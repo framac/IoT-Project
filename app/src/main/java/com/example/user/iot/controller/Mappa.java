@@ -3,7 +3,11 @@ package com.example.user.iot.controller;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -48,8 +53,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Mappa extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private ArrayList<Node> list;
@@ -60,6 +75,12 @@ public class Mappa extends AppCompatActivity
     private BeaconDataSource datasource;
     private String type;
     boolean service = false;
+    private BluetoothManager btManager;
+    private BluetoothAdapter btAdapter;
+    private BluetoothLeScanner btScanner;
+    private BluetoothDevice device;
+    private HashMap<BluetoothDevice, Integer> bluetoothDevices = new HashMap<BluetoothDevice, Integer>();
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -124,6 +145,7 @@ public class Mappa extends AppCompatActivity
 
         ArrayList<Node> start = datasource.getAllBeacon();
         mapViewController.addNodes(start);
+        
         for (int i = 0; i < start.size(); i++) {
            getLastData(start.get(i).getBeacon().get(0));
         }
@@ -137,6 +159,9 @@ public class Mappa extends AppCompatActivity
                 startService(new Intent(getBaseContext(), GestioneConnessioneBA.class));
                 LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
                 service = true;
+                btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                btAdapter = btManager.getAdapter();
+                btScanner = btAdapter.getBluetoothLeScanner();
             } else{
                 AlertDialog.Builder builder=new AlertDialog.Builder(this);
                 builder.setTitle("Ricorda!");
@@ -225,8 +250,7 @@ public class Mappa extends AppCompatActivity
                 }
             }
         } else {
-            Intent resIntent = new Intent("ricercaPosizione");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+            ricercaPosizione();
         }
     }
 
@@ -290,8 +314,7 @@ public class Mappa extends AppCompatActivity
         } else if (id == R.id.piano155){
             mapViewController.changeFloor(155);
         } else if (id == R.id.ricerca){
-            Intent resIntent = new Intent("ricercaPosizione");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+            ricercaPosizione();
         }else if(id == R.id.reset){
             recreate();
         }else if (id == R.id.test1) { //test beacon db
@@ -324,7 +347,7 @@ public class Mappa extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
 
             if (intent.getAction().equals("DeviceParameters")){
-                String macAddress = intent.getExtras().getString("macadress");
+                String macAddress = intent.getExtras().getString("macAddress");
                 double distance = intent.getExtras().getDouble("distance");
                 Node beacon = datasource.getBeacon(macAddress);
                 Node utente = new Node((beacon.getPoint().x)-(float) distance,(beacon.getPoint().y)-(float) distance,
@@ -439,7 +462,7 @@ public class Mappa extends AppCompatActivity
             BeaconDataSource datasource =  new BeaconDataSource(MainActivity.context);
             datasource.open();
             datasource.updateBeacon(response);
-            recreate();
+            datasource.close();
         }
     };
 
@@ -465,4 +488,84 @@ public class Mappa extends AppCompatActivity
         JsonObjectRequest request=new JsonObjectRequest(getResources().getString(R.string.getDatiAmb)+macAddress, null, postListener, errorListener);
         mRequestQueue.add(request);
     }
+
+
+    public void ricercaPosizione(){
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                btScanner.startScan(leScanCallback);
+            }
+        });
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // this code will be executed after 4 seconds
+                btScanner.stopScan(leScanCallback);
+
+                Map<BluetoothDevice, Integer> sortedMap = sortByValue(bluetoothDevices);
+                bluetoothDevices.clear();
+
+                Set<BluetoothDevice> listaDevices = sortedMap.keySet();
+                for (BluetoothDevice device : listaDevices) {
+                    double distance = getDistance(sortedMap.get(device));
+                    broadcastUpdate(device.getAddress(), distance);
+                    break;
+                }
+            }
+        }, 4000);
+    }
+    private ScanCallback leScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+
+            if (result.getDevice().getName() != null && (result.getDevice().getName().equals("SensorTag2") || result.getDevice().getName().equals("CC2650 SensorTag")) && !bluetoothDevices.containsKey(result.getDevice())) {
+                bluetoothDevices.put(result.getDevice(), result.getRssi());
+
+            }
+        }
+    };
+
+    private static Map<BluetoothDevice, Integer> sortByValue(Map<BluetoothDevice, Integer> unsortMap) {
+
+        // 1. Convert Map to List of Map
+        List<Map.Entry<BluetoothDevice, Integer>> list =
+                new LinkedList<Map.Entry<BluetoothDevice, Integer>>(unsortMap.entrySet());
+
+        // 2. Sort list with Collections.sort(), provide a custom Comparator
+        //    Try switch the o1 o2 position for a different order
+
+        Collections.sort(list, new Comparator<Map.Entry<BluetoothDevice, Integer>>() {
+            public int compare(Map.Entry<BluetoothDevice, Integer> o1,
+                               Map.Entry<BluetoothDevice, Integer> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+
+        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
+        Map<BluetoothDevice, Integer> sortedMap = new LinkedHashMap<BluetoothDevice, Integer>();
+        for (Map.Entry<BluetoothDevice, Integer> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
+    public double getDistance(int rssi) {
+
+//         RSSI = txpower - 10 * n * lg (d)
+//         N = 2 (nello spazio libero)
+//         D = 10 ^ ((txpower - RSSI) / (10 * n))
+
+        return (Math.pow(10d, ((double) (-30) - rssi) / (10 * 2))) / 100;
+
+    }
+
+    private void broadcastUpdate(String macAddress, double distance) {
+        Intent resIntent = new Intent("DeviceParameters");
+        resIntent.putExtra("macAddress", macAddress);
+        resIntent.putExtra("distance", distance);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+    }
+
 }

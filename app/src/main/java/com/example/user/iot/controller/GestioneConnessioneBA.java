@@ -36,8 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -94,7 +92,7 @@ public class GestioneConnessioneBA extends Service {
             e.printStackTrace();
         }
         startScanning();
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,  new IntentFilter("alert"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
 
         return START_NOT_STICKY;
     }
@@ -157,32 +155,7 @@ public class GestioneConnessioneBA extends Service {
         }
     }
 
-    public void ricercaPosizione(){
 
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                btScanner.startScan(leScanCallback);
-            }
-        });
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // this code will be executed after 4 seconds
-                btScanner.stopScan(leScanCallback);
-
-                Map<BluetoothDevice, Integer> sortedMap = sortByValue(bluetoothDevices);
-                bluetoothDevices.clear();
-
-                Set<BluetoothDevice> listaDevices = sortedMap.keySet();
-                for (BluetoothDevice device : listaDevices) {
-                    double distance = getDistance(sortedMap.get(device));
-                    broadcastUpdate(device.getAddress(), distance);
-                    break;
-                }
-            }
-        }, 4000);
-    }
 
     private static Map<BluetoothDevice, Integer> sortByValue(Map<BluetoothDevice, Integer> unsortMap) {
 
@@ -243,10 +216,15 @@ public class GestioneConnessioneBA extends Service {
             if (intent.getAction().equals("alert")){
                 alert=true;
                 startScanning();
-            } else if(intent.getAction().equals("ricercaPosizone")){
-                ricercaPosizione();
             }
         }
     };
+
+    private static IntentFilter makeIntentFilter() {
+        final IntentFilter fi = new IntentFilter();
+        fi.addAction("alert");
+        return fi;
+    }
+
 }
 

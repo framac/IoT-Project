@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         datasource = new BeaconDataSource(this);
         datasource.open();
-        prefBeacon=PreferenceManager.getDefaultSharedPreferences(this);
+       // prefBeacon=PreferenceManager.getDefaultSharedPreferences(this);
 
         //richiesta
         if(!prefs.getBoolean("firstTimeUsername", false)) {
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //richiesta posizioni dei beacon
-        if(!prefBeacon.getBoolean("firstTimeDb", false)) {
+        if(!prefs.getBoolean("firstTimeDb", false)) {
             RequestQueue mRequestQueue= Volley.newRequestQueue(this);
             JsonArrayRequest request=new JsonArrayRequest(Request.Method.GET,getResources().getString(R.string.getBeacon), null, postListenerJsonArray, errorListener);
             mRequestQueue.add(request);
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         utenteOspite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent mappa = new Intent(getApplicationContext(),Mappa.class);
+                Intent mappa = new Intent(getApplicationContext(), Mappa.class);
                 startActivity(mappa);
             }
         });
@@ -270,14 +270,12 @@ public class MainActivity extends AppCompatActivity {
     private Response.Listener<JSONArray> postListenerJsonArray= new Response.Listener<JSONArray>(){
         @Override
         public void onResponse(JSONArray response) {
-            if (Build.VERSION.SDK_INT >= 19) {
                 // run your one time code
-                editorBeacon = prefBeacon.edit();
+                editorBeacon = prefs.edit();
                 editorBeacon.putBoolean("firstTimeDb", true);
                 editorBeacon.commit();
                 datasource.createBeacon(response);
                 readNodi();
-            }
 
         }
     };
