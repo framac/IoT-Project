@@ -157,16 +157,14 @@ public class Mappa extends AppCompatActivity
         }
         mapViewController.addNodes(datasource.getExit());
 
-        BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothAdapter btAdapter = btManager.getAdapter();
+        btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        btAdapter = btManager.getAdapter();
 
         if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
             if(btAdapter != null && btAdapter.isEnabled()){
                 startService(new Intent(getBaseContext(), GestioneConnessioneBA.class));
                 LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
                 service = true;
-                btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                btAdapter = btManager.getAdapter();
                 btScanner = btAdapter.getBluetoothLeScanner();
             } else{
                 AlertDialog.Builder builder=new AlertDialog.Builder(this);
@@ -522,30 +520,31 @@ public class Mappa extends AppCompatActivity
     }
 
     public void ricercaPosizione(){
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                btScanner.startScan(leScanCallback);
-            }
-        });
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // this code will be executed after 4 seconds
-                btScanner.stopScan(leScanCallback);
-
-                Map<BluetoothDevice, Integer> sortedMap = sortByValue(bluetoothDevices);
-                bluetoothDevices.clear();
-
-                Set<BluetoothDevice> listaDevices = sortedMap.keySet();
-                for (BluetoothDevice device : listaDevices) {
-                    double distance = getDistance(sortedMap.get(device));
-                    broadcastUpdate(device.getAddress(), distance);
-                    break;
+        if(btAdapter != null && btAdapter.isEnabled()){
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    btScanner.startScan(leScanCallback);
                 }
-            }
-        }, 4000);
+            });
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    // this code will be executed after 4 seconds
+                    btScanner.stopScan(leScanCallback);
+
+                    Map<BluetoothDevice, Integer> sortedMap = sortByValue(bluetoothDevices);
+                    bluetoothDevices.clear();
+
+                    Set<BluetoothDevice> listaDevices = sortedMap.keySet();
+                    for (BluetoothDevice device : listaDevices) {
+                        double distance = getDistance(sortedMap.get(device));
+                        broadcastUpdate(device.getAddress(), distance);
+                        break;
+                    }
+                }
+            }, 4000);
+        }
     }
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
