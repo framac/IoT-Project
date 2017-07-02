@@ -59,10 +59,8 @@
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/relativelayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="0dp">
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
         <com.example.user.iot.model.CustomMapView
             android:id="@+id/map"
             android:layout_width="match_parent"

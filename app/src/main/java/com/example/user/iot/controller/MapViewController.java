@@ -118,29 +118,6 @@ public class MapViewController {
         }
     }
 
-    public void updateBeacon(Node update){ //aggiorna i valori ambientali di un beacon già presente
-        ArrayList<Node> list = new ArrayList<>();
-        PointF point = coordConverter(update.getPoint(),update.getFloor());
-        update.setPoint(point);
-        switch(update.getFloor()){
-            case 145: list = floor_145;
-                break;
-
-            case 150: list = floor_150;
-                break;
-
-            case 155: list = floor_155;
-                break;
-            default:
-                break;
-        }
-        for (int i = 0; i < list.size(); i++) {
-            if(list.get(i).getPoint().equals(update.getPoint())){
-                list.get(i).setBeacon(update.getBeacon());
-            }
-        }
-    }
-
     public void addNodes(ArrayList<Node> list){ //aggiunge nodi ad uno o più piani contemporaneamente
         for (int i = 0; i < list.size(); i++) { //utile per caricare i tutti i beacon e le uscite all'inizio
             node = list.get(i);

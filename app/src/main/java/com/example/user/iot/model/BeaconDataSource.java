@@ -68,18 +68,14 @@ public class BeaconDataSource {
 
     public Node getBeacon(String mac){
         Node node = null;
-        List<String> dati = new ArrayList<>();
-        dati.add(mac);
-        for(int i=0; i<6; i++){
-            dati.add("Non disponibile");
-        }
+
         Cursor cursor = database.query(MySQLiteHelper.TABLE_BEACON,
                 allColumns, "macaddress = ?", new String[]{mac}, null, null, null);
         cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
 
-            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),dati);
-            node.setId(cursor.getString(2));
+        while (!cursor.isAfterLast()) {
+            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",
+                    cursor.getInt(3),cursor.getString(2),mac);
             cursor.moveToNext();
         }
         // make sure to close the cursor
@@ -90,20 +86,14 @@ public class BeaconDataSource {
     public ArrayList<Node> getAllBeacon() {
         ArrayList<Node> listBeacon= new ArrayList<>();
         Node node = null;
-        String id;
-        List<String> dati = new ArrayList<>();
-        for(int i=0; i<7; i++){
-            dati.add("Non disponibile");
-        }
 
         Cursor cursor = database.query(MySQLiteHelper.TABLE_BEACON,
                 allColumns, null, null, null, null, null);
-
         cursor.moveToFirst();
+
         while (!cursor.isAfterLast()) {
-            dati.set(0,cursor.getString(1));
-            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",cursor.getInt(3),dati);
-            node.setId(cursor.getString(2));
+            node = new Node(cursor.getFloat(4),cursor.getFloat(5),"Beacon",
+                    cursor.getInt(3),cursor.getString(2),cursor.getString(1));
             listBeacon.add(node);
             cursor.moveToNext();
         }
@@ -154,8 +144,7 @@ public class BeaconDataSource {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
 
-            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Beacon",cursor.getInt(3));
-            node.setId(cursor.getString(4));
+            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Beacon",cursor.getInt(3), cursor.getString(4));
             cursor.moveToNext();
         }
         // make sure to close the cursor
@@ -172,8 +161,7 @@ public class BeaconDataSource {
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Uscita",cursor.getInt(3));
-            node.setId(cursor.getString(4));
+            node = new Node(cursor.getFloat(1),cursor.getFloat(2),"Uscita",cursor.getInt(3),cursor.getString(4));
             listExit.add(node);
             cursor.moveToNext();
         }

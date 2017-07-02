@@ -30,7 +30,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.GestureDetector;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -123,19 +122,9 @@ public class Mappa extends AppCompatActivity
                     if(list != null) {
                         for (int i = 0; i < list.size(); i++) {
                             node = list.get(i);
-                            List<String> dati = node.getBeacon();
-                            if(node.isNear(sCoord) && dati!= null){
-                                AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
-                                builder.setTitle("Beacon "+node.getId());
-                                builder.setMessage("Mac: " + dati.get(0) + "\n" +
-                                                   "Batteria: " + dati.get(1) + "\n" +
-                                                   "Temperatura: " + dati.get(2) + "\n" +
-                                                   "AccelX: " + dati.get(3) + "\n" +
-                                                   "AccelY: " + dati.get(4) + "\n" +
-                                                   "AccelZ: " + dati.get(5) + "\n" +
-                                                   "Luminosità: " + dati.get(6));
-                                builder.setPositiveButton(android.R.string.ok, null);
-                                builder.show();
+                            String mac = node.getMacAddress();
+                            if(node.isSelected(sCoord) && mac!=null){
+                                getLastData(mac);
                             }
                         }
                     }
@@ -150,11 +139,8 @@ public class Mappa extends AppCompatActivity
             }
         });
 
-        ArrayList<Node> start = datasource.getAllBeacon();
-        mapViewController.addNodes(start);
-        for (int i = 0; i < start.size(); i++) {
-           getLastData(start.get(i).getBeacon().get(0));
-        }
+        //vengono caricati i beacon e le uscite
+        mapViewController.addNodes(datasource.getAllBeacon());
         mapViewController.addNodes(datasource.getExit());
 
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -233,7 +219,6 @@ public class Mappa extends AppCompatActivity
                         mapViewController.changeFloor(node.getFloor());
                         setTitle("Alert Mode");
                         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                        getLastData(where);
                     }
                     if(type.equals("Incendio1")){
                         node = datasource.getNode(where);
@@ -250,7 +235,6 @@ public class Mappa extends AppCompatActivity
                         mapViewController.changeFloor(node.getFloor());
                         setTitle("Alert Mode");
                         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                        getLastData(where);
                     }
                     if(type.equals("Illuminazione1")){
                         node = datasource.getNode(where);
@@ -304,28 +288,6 @@ public class Mappa extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) { //il menu settings che esce dai tre puntini
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -357,7 +319,7 @@ public class Mappa extends AppCompatActivity
             mapViewController.addNode(node);
             mapViewController.changeFloor(node.getFloor());
         } else if(id == R.id.test3){ //test emergenza
-            node = new Node(129,465,"Beacon",150);
+            node = new Node(129,465,"Beacon",150,"150Boh");
             node.setDrawable("Emergenza");
             mapViewController.addNode(node);
             mapViewController.changeFloor(150);
@@ -393,7 +355,6 @@ public class Mappa extends AppCompatActivity
                 mapViewController.changeFloor(node.getFloor());
                 setTitle("Alert Mode");
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                getLastData(macAddress);
             } else if (intent.getAction().equals("Incendio1")) {
                 String nodo = intent.getExtras().getString("dove");
                 node = datasource.getNode(nodo);
@@ -410,7 +371,6 @@ public class Mappa extends AppCompatActivity
                 mapViewController.changeFloor(node.getFloor());
                 setTitle("Alert Mode");
                 getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.RED));
-                getLastData(macAddress);
             } else if (intent.getAction().equals("Illuminazione1")) {
                 String nodo = intent.getExtras().getString("dove");
                 node = datasource.getNode(nodo);
@@ -470,11 +430,24 @@ public class Mappa extends AppCompatActivity
                     datiAmbientali.add(response.getString("zAcc"));
                     datiAmbientali.add(response.getString("lux"));
                     if(response.getString("macAdd").equals("null")) {
-
+                        AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
+                        builder.setTitle("Dati non disponibili");
+                        builder.setMessage("Non ci sono dati da visualizzare per il beacon selezionato");
+                        builder.setPositiveButton(android.R.string.ok, null);
+                        builder.show();
                     }else{
                         node = datasource.getBeacon(response.getString("macAdd"));
-                        node.setBeacon(datiAmbientali);
-                        mapViewController.updateBeacon(node);
+                        AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
+                        builder.setTitle("Beacon "+node.getId());
+                        builder.setMessage("Mac: " + datiAmbientali.get(0) + "\n" +
+                                "Batteria: " + datiAmbientali.get(1) + "\n" +
+                                "Temperatura: " + datiAmbientali.get(2) + "\n" +
+                                "AccelX: " + datiAmbientali.get(3) + "\n" +
+                                "AccelY: " + datiAmbientali.get(4) + "\n" +
+                                "AccelZ: " + datiAmbientali.get(5) + "\n" +
+                                "Luminosità: " + datiAmbientali.get(6));
+                        builder.setPositiveButton(android.R.string.ok, null);
+                        builder.show();
                     }
                 } else{
                     Log.d(getString(R.string.datiAmbientali), "Dati non ricevuti");
@@ -502,6 +475,12 @@ public class Mappa extends AppCompatActivity
         public void onErrorResponse(VolleyError err)
         {
             Log.d(getString(R.string.datiAmbientali), "Erorre di rete: " +err.getMessage());
+            AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
+            builder.setTitle("Dati non disponibili");
+            builder.setMessage("Non è stato possibile collegarsi al server" +
+                    " per recuperare i dati del beacon selezionato");
+            builder.setPositiveButton(android.R.string.ok, null);
+            builder.show();
         }
     };
 
