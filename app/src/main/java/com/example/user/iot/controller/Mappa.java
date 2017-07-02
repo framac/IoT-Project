@@ -29,6 +29,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -60,6 +63,10 @@ public class Mappa extends AppCompatActivity
     private BeaconDataSource datasource;
     private String type;
     boolean service = false;
+
+    Button cerca;
+    EditText aula;
+    LinearLayout ricercaAula;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -151,6 +158,27 @@ public class Mappa extends AppCompatActivity
             builder.setPositiveButton(android.R.string.ok, null);
             builder.show();
         }
+
+        cerca = (Button) findViewById(R.id.Cerca);
+        aula =  (EditText) findViewById(R.id.txtAula);
+        ricercaAula = (LinearLayout) findViewById(R.id.ricercaAula);
+
+
+        cerca.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                node = datasource.getNode(aula.getText().toString());
+                if(node==null){
+                    aula.setError("L'aula cercata non esiste");
+                }
+                else {
+                    mapViewController.deleteAula(node.getFloor());
+                    node.setDrawable("Aula");
+                    mapViewController.addNode(node);
+                    mapViewController.changeFloor(node.getFloor());
+                }
+            }
+        });
 
     }
 
@@ -284,14 +312,20 @@ public class Mappa extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.piano145){
+            ricercaAula.setVisibility(View.INVISIBLE);
             mapViewController.changeFloor(145);
         } else if (id == R.id.piano150){
+            ricercaAula.setVisibility(View.INVISIBLE);
             mapViewController.changeFloor(150);
         } else if (id == R.id.piano155){
+            ricercaAula.setVisibility(View.INVISIBLE);
             mapViewController.changeFloor(155);
         } else if (id == R.id.ricerca){
             Intent resIntent = new Intent("ricercaPosizione");
             LocalBroadcastManager.getInstance(this).sendBroadcast(resIntent);
+        } else if (id == R.id.ricercaAula){
+            ricercaAula.setVisibility(View.VISIBLE);
+            ricercaAula.bringToFront();
         }else if(id == R.id.reset){
             recreate();
         }else if (id == R.id.test1) { //test beacon db

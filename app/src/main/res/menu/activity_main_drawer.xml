@@ -3,12 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/posizione"
-        android:title="Posizione">
+        android:title="Ricerca">
         <menu>
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/ricerca"
                     android:title="Ricerca posizione" />
+                <item
+                    android:id="@+id/ricercaAula"
+                    android:title="Ricerca aula" />
             </group>
         </menu>
     </item>
