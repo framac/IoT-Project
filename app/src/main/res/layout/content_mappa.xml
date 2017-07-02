@@ -11,10 +11,12 @@
         android:id="@+id/ricercaAula"
         android:visibility="invisible"
         android:background="#FFFFFF"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:weightSum="1">
+        android:weightSum="1"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -57,8 +59,10 @@
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/relativelayout"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="0dp">
         <com.example.user.iot.model.CustomMapView
             android:id="@+id/map"
             android:layout_width="match_parent"
