@@ -97,6 +97,27 @@ public class MapViewController {
         }
     }
 
+    public void deleteAula(int floor){ //cancella l'aula cercata in precedenza
+        ArrayList<Node> list = new ArrayList<>();
+        switch(floor){
+            case 145: list = floor_145;
+                break;
+
+            case 150: list = floor_150;
+                break;
+
+            case 155: list = floor_155;
+                break;
+            default:
+                break;
+        }
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).getDrawable()==R.drawable.target){
+                list.remove(i);
+            }
+        }
+    }
+
     public void updateBeacon(Node update){ //aggiorna i valori ambientali di un beacon già presente
         ArrayList<Node> list = new ArrayList<>();
         PointF point = coordConverter(update.getPoint(),update.getFloor());
