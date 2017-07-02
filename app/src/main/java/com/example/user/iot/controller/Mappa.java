@@ -165,6 +165,7 @@ public class Mappa extends AppCompatActivity
                 startService(new Intent(getBaseContext(), GestioneConnessioneBA.class));
                 LocalBroadcastManager.getInstance(this).registerReceiver(receiver, makeIntentFilter());
                 service = true;
+                btScanner = btAdapter.getBluetoothLeScanner();
             } else{
                 AlertDialog.Builder builder=new AlertDialog.Builder(this);
                 builder.setTitle("Ricorda!");
