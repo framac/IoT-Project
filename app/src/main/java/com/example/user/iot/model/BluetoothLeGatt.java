@@ -248,7 +248,7 @@ public class BluetoothLeGatt extends IntentService {
             }
             readAccellerometer();
 
-        } else if (stringa.equals("LightService")){
+        } else if (stringa.equals("lightService")){
             if(value <= luxThreshold) {
                 Intent resIntent = new Intent("Illuminazione");
                 resIntent.putExtra("dove", macAddress);
