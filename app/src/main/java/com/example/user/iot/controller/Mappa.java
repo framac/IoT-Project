@@ -340,7 +340,7 @@ public class Mappa extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
 
             if (intent.getAction().equals("DeviceParameters")){
-                String macAddress = intent.getExtras().getString("macadress");
+                String macAddress = intent.getExtras().getString("macAddress");
                 double distance = intent.getExtras().getDouble("distance");
                 Node beacon = datasource.getBeacon(macAddress);
                 Node utente = new Node((beacon.getPoint().x)-(float) distance,(beacon.getPoint().y)-(float) distance,
