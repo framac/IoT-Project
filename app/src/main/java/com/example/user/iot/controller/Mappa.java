@@ -317,7 +317,7 @@ public class Mappa extends AppCompatActivity
             recreate();
         }else if (id == R.id.test1) { //test beacon db
             ricercaAula.setVisibility(View.INVISIBLE);
-            node = datasource.getBeacon("24:71:89:E7:13:87");
+            node = new Node(115,465,"Utente",150,"150Boh");
             mapViewController.addNode(node);
             mapViewController.changeFloor(node.getFloor());
         } else if (id == R.id.test2) { //test nodo db
@@ -351,7 +351,7 @@ public class Mappa extends AppCompatActivity
                 String macAddress = intent.getExtras().getString("macAddress");
                 double distance = intent.getExtras().getDouble("distance");
                 Node beacon = datasource.getBeacon(macAddress);
-                Node utente = new Node((beacon.getPoint().x)-(float) distance,(beacon.getPoint().y)-(float) distance,
+                Node utente = new Node(beacon.getPoint().x + 5,beacon.getPoint().y,
                                         R.drawable.user,beacon.getFloor());
                 mapViewController.addNode(utente);
                 mapViewController.changeFloor(beacon.getFloor());
