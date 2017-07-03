@@ -11,12 +11,10 @@
         android:id="@+id/ricercaAula"
         android:visibility="invisible"
         android:background="#FFFFFF"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:weightSum="1"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp">
+        android:weightSum="1">
 
         <LinearLayout
             android:layout_width="match_parent"

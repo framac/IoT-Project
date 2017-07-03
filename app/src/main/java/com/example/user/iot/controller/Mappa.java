@@ -421,14 +421,6 @@ public class Mappa extends AppCompatActivity
             try {
                 if(response != null) {
                     Log.d(getString(R.string.datiAmbientali), "Dati ricevuti");
-                    List<String> datiAmbientali = new ArrayList<>();
-                    datiAmbientali.add(response.getString("macAdd"));
-                    datiAmbientali.add(response.getString("batteria"));
-                    datiAmbientali.add(response.getString("temperatura"));
-                    datiAmbientali.add(response.getString("xAcc"));
-                    datiAmbientali.add(response.getString("yAcc"));
-                    datiAmbientali.add(response.getString("zAcc"));
-                    datiAmbientali.add(response.getString("lux"));
                     if(response.getString("macAdd").equals("null")) {
                         AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
                         builder.setTitle("Dati non disponibili");
@@ -439,13 +431,13 @@ public class Mappa extends AppCompatActivity
                         node = datasource.getBeacon(response.getString("macAdd"));
                         AlertDialog.Builder builder=new AlertDialog.Builder(Mappa.this);
                         builder.setTitle("Beacon "+node.getId());
-                        builder.setMessage("Mac: " + datiAmbientali.get(0) + "\n" +
-                                "Batteria: " + datiAmbientali.get(1) + "\n" +
-                                "Temperatura: " + datiAmbientali.get(2) + "\n" +
-                                "AccelX: " + datiAmbientali.get(3) + "\n" +
-                                "AccelY: " + datiAmbientali.get(4) + "\n" +
-                                "AccelZ: " + datiAmbientali.get(5) + "\n" +
-                                "Luminosità: " + datiAmbientali.get(6));
+                        builder.setMessage("Mac: " + response.getString("macAdd") + "\n" +
+                                "Batteria: " + response.getString("batteria") + "\n" +
+                                "Temperatura: " + response.getString("temperatura") + "\n" +
+                                "AccelX: " + response.getString("xAcc") + "\n" +
+                                "AccelY: " + response.getString("yAcc") + "\n" +
+                                "AccelZ: " + response.getString("zAcc") + "\n" +
+                                "Luminosità: " + response.getString("lux"));
                         builder.setPositiveButton(android.R.string.ok, null);
                         builder.show();
                     }
