@@ -97,7 +97,13 @@ public class MapViewController {
         }
     }
 
-    public void deleteAula(int floor){ //cancella l'aula cercata in precedenza
+    public void deleteAula(){ //cancella l'aula cercata in precedenza
+        this.deleteInPiano(145);
+        this.deleteInPiano(150);
+        this.deleteInPiano(155);
+    }
+
+    public void deleteInPiano(int floor){
         ArrayList<Node> list = new ArrayList<>();
         switch(floor){
             case 145: list = floor_145;

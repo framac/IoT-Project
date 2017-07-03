@@ -81,6 +81,7 @@ public class Mappa extends AppCompatActivity
     Button cerca;
     EditText aula;
     LinearLayout ricercaAula;
+    private PointF p;
 
     private BluetoothManager btManager;
     private BluetoothAdapter btAdapter;
@@ -180,8 +181,11 @@ public class Mappa extends AppCompatActivity
                     aula.setError("L'aula cercata non esiste");
                 }
                 else {
-                    mapViewController.deleteAula(node.getFloor());
+                    mapViewController.deleteAula();
                     node.setDrawable("Aula");
+                    p=node.getPoint();
+                    p.x++;
+                    node.setPoint(p);
                     mapViewController.addNode(node);
                     mapViewController.changeFloor(node.getFloor());
                 }
@@ -304,6 +308,7 @@ public class Mappa extends AppCompatActivity
             ricercaAula.setVisibility(View.INVISIBLE);
             mapViewController.changeFloor(155);
         } else if (id == R.id.ricerca){
+            ricercaAula.setVisibility(View.INVISIBLE);
             ricercaPosizione();
         } else if (id == R.id.ricercaAula){
             ricercaAula.setVisibility(View.VISIBLE);
@@ -311,14 +316,17 @@ public class Mappa extends AppCompatActivity
         }else if(id == R.id.reset){
             recreate();
         }else if (id == R.id.test1) { //test beacon db
+            ricercaAula.setVisibility(View.INVISIBLE);
             node = datasource.getBeacon("24:71:89:E7:13:87");
             mapViewController.addNode(node);
             mapViewController.changeFloor(node.getFloor());
         } else if (id == R.id.test2) { //test nodo db
+            ricercaAula.setVisibility(View.INVISIBLE);
             node = datasource.getNode("150WC1");
             mapViewController.addNode(node);
             mapViewController.changeFloor(node.getFloor());
         } else if(id == R.id.test3){ //test emergenza
+            ricercaAula.setVisibility(View.INVISIBLE);
             node = new Node(129,465,"Beacon",150,"150Boh");
             node.setDrawable("Emergenza");
             mapViewController.addNode(node);
